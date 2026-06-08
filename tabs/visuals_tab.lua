@@ -1,4 +1,4 @@
-
+-- tabs/visuals_tab.lua
 return function(ui, settings)
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
@@ -6,38 +6,42 @@ return function(ui, settings)
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
+    -- Absicherung, falls Werte in settings fehlen
+    if settings.espBoxes == nil then settings.espBoxes = false end
+    if settings.espSkeletons == nil then settings.espSkeletons = false end
+    if settings.espTracers == nil then settings.espTracers = false end
+    if not settings.colors then settings.colors = {} end
+    
+    settings.colors.Box = settings.colors.Box or Color3.fromRGB(239, 68, 68)
+    settings.colors.Skeleton = settings.colors.Skeleton or Color3.fromRGB(255, 255, 0)
+    settings.colors.Tracer = settings.colors.Tracer or Color3.fromRGB(56, 189, 248)
+    settings.colors.Self = settings.colors.Self or Color3.fromRGB(168, 85, 247)
+    settings.colors.Team = settings.colors.Team or Color3.fromRGB(34, 197, 94)
+
     local VisualsPage = ui.CreatePage("Visuals")
     
-    -- Linke Karte: ESP Haupt-Einstellungen
+    -- Linke Karte: Switches
     local CardEsp = ui.CreateCard(VisualsPage, "PLAYER VISUAL SYSTEMS", UDim2.new(0, 360, 0, 300), UDim2.new(0, 0, 0, 0), "👁")
     local EspDesc = Instance.new("TextLabel", CardEsp)
     EspDesc.Text = "Erweiterte Visualisierungssysteme für Feinde, Teams und dich selbst."; EspDesc.Font = Enum.Font.Gotham; EspDesc.TextSize = 11; EspDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
     EspDesc.Position = UDim2.new(0, 16, 0, 45); EspDesc.Size = UDim2.new(1, -32, 0, 20); EspDesc.BackgroundTransparency = 1; EspDesc.TextWrapped = true; EspDesc.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Schalter verknüpfen
-    ui.CreateInlineToggle(CardEsp, "🔲 Master ESP Switches (Global Toggle)", 75, false, function(state) settings.espEnabled = state end)
-    ui.CreateInlineToggle(CardEsp, "📦 Draw 2D Corner Boxes", 110, false, function(state) settings.espBoxes = state end)
-    ui.CreateInlineToggle(CardEsp, "☠ Draw 3D Skeletons (Bones)", 145, false, function(state) settings.espSkeletons = state end)
-    ui.CreateInlineToggle(CardEsp, "📏 Draw Snaplines (Tracers)", 180, false, function(state) settings.espTracers = state end)
-    ui.CreateInlineToggle(CardEsp, "👤 Enable Self ESP (Show Me)", 215, false, function(state) settings.selfEspEnabled = state end)
-    ui.CreateInlineToggle(CardEsp, "🛡 Enable Team-Check (Hide Friends)", 250, true, function(state) settings.teamCheckEnabled = state end)
+    ui.CreateInlineToggle(CardEsp, "🔲 Master ESP Switches (Global Toggle)", 75, settings.espEnabled or false, function(state) settings.espEnabled = state end)
+    ui.CreateInlineToggle(CardEsp, "📦 Draw 2D Corner Boxes", 110, settings.espBoxes or false, function(state) settings.espBoxes = state end)
+    ui.CreateInlineToggle(CardEsp, "☠ Draw 3D Skeletons (Bones)", 145, settings.espSkeletons or false, function(state) settings.espSkeletons = state end)
+    ui.CreateInlineToggle(CardEsp, "📏 Draw Snaplines (Tracers)", 180, settings.espTracers or false, function(state) settings.espTracers = state end)
+    ui.CreateInlineToggle(CardEsp, "👤 Enable Self ESP (Show Me)", 215, settings.selfEspEnabled or false, function(state) settings.selfEspEnabled = state end)
+    ui.CreateInlineToggle(CardEsp, "🛡 Enable Team-Check (Hide Friends)", 250, settings.teamCheckEnabled or true, function(state) settings.teamCheckEnabled = state end)
 
-    -- Rechte Karte: Farbeditor & Profile
+    -- Rechte Karte: Farbeditor
     local CardColors = ui.CreateCard(VisualsPage, "COLOR CONFIGURATOR", UDim2.new(0, 260, 0, 300), UDim2.new(0, 380, 0, 0), "🎨")
     
-    -- Farbpalette zum Durchwechseln bei Klick
     local colorPalette = {
-        Color3.fromRGB(239, 68, 68),   -- Neon Rot
-        Color3.fromRGB(56, 189, 248),  -- Hellblau / Cyan
-        Color3.fromRGB(34, 197, 94),   -- Grün
-        Color3.fromRGB(245, 158, 11),  -- Orange
-        Color3.fromRGB(168, 85, 247),  -- Lila
-        Color3.fromRGB(255, 255, 0),   -- Gelb
-        Color3.fromRGB(255, 255, 255), -- Weiß
-        Color3.fromRGB(244, 63, 94)    -- Pink
+        Color3.fromRGB(239, 68, 68), Color3.fromRGB(56, 189, 248), Color3.fromRGB(34, 197, 94),
+        Color3.fromRGB(245, 158, 11), Color3.fromRGB(168, 85, 247), Color3.fromRGB(255, 255, 0),
+        Color3.fromRGB(255, 255, 255), Color3.fromRGB(244, 63, 94)
     }
 
-    -- Klickbarer Farbwähler-Knopf
     local function createColorSelector(text, colorKey, y)
         local frame = Instance.new("Frame", CardColors)
         frame.Size = UDim2.new(1, -24, 0, 30); frame.Position = UDim2.new(0, 12, 0, y); frame.BackgroundTransparency = 1
@@ -46,17 +50,14 @@ return function(ui, settings)
         lbl.Text = text; lbl.Font = Enum.Font.GothamMedium; lbl.TextSize = 11; lbl.TextColor3 = Color3.fromRGB(148, 163, 184); lbl.Size = UDim2.new(1, -70, 1, 0); lbl.BackgroundTransparency = 1; lbl.TextXAlignment = Enum.TextXAlignment.Left
         
         local colorBtn = Instance.new("TextButton", frame)
-        colorBtn.Size = UDim2.new(0, 50, 0, 20); colorBtn.Position = UDim2.new(1, -55, 0.5, -10); colorBtn.BackgroundColor3 = settings.colors[colorKey] or Color3.fromRGB(255,255,255); colorBtn.Text = "»"; colorBtn.Font = Enum.Font.GothamBold; colorBtn.TextColor3 = Color3.fromRGB(255,255,255); colorBtn.TextSize = 12
+        colorBtn.Size = UDim2.new(0, 50, 0, 20); colorBtn.Position = UDim2.new(1, -55, 0.5, -10); colorBtn.BackgroundColor3 = settings.colors[colorKey]; colorBtn.Text = "»"; colorBtn.Font = Enum.Font.GothamBold; colorBtn.TextColor3 = Color3.fromRGB(255,255,255); colorBtn.TextSize = 12
         Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0, 4)
-        local stroke = Instance.new("UIStroke", colorBtn)
-        stroke.Color = Color3.fromRGB(40, 55, 85); stroke.Thickness = 1
 
         local currentColorIndex = 1
         colorBtn.MouseButton1Click:Connect(function()
             currentColorIndex = currentColorIndex + 1
             if currentColorIndex > #colorPalette then currentColorIndex = 1 end
             local nextColor = colorPalette[currentColorIndex]
-            
             settings.colors[colorKey] = nextColor
             colorBtn.BackgroundColor3 = nextColor
         end)
@@ -68,7 +69,7 @@ return function(ui, settings)
     createColorSelector("👤 Self ESP Color", "Self", 150)
     createColorSelector("🛡 Friendly Team Color", "Team", 185)
 
-    -- ESP Box Multiplier Slider
+    -- Slider für Skalierung
     local SizeTitle = Instance.new("TextLabel", CardColors)
     SizeTitle.Text = "ESP SIZE MULTIPLIER"; SizeTitle.Font = Enum.Font.GothamBold; SizeTitle.TextSize = 9; SizeTitle.TextColor3 = Color3.fromRGB(71, 85, 105)
     SizeTitle.Position = UDim2.new(0, 14, 0, 225); SizeTitle.Size = UDim2.new(0, 180, 0, 15); SizeTitle.BackgroundTransparency = 1
@@ -108,7 +109,6 @@ return function(ui, settings)
         end
     end))
 
-    -- Knochenpaare für R15 und R6 Skelette
     local SkeletonPairs = {
         {"Head", "UpperTorso"}, {"UpperTorso", "LowerTorso"}, {"Head", "Torso"},
         {"UpperTorso", "LeftUpperArm"}, {"LeftUpperArm", "LeftLowerArm"}, {"LeftLowerArm", "LeftHand"},
@@ -125,14 +125,15 @@ return function(ui, settings)
     end
 
     local function createESP(player)
-        local container = ui.MainFrame.Parent:FindFirstChild("FreezyHubV2")
+        -- Sucht dynamisch nach deiner aktiven UI-Instanz im CoreGui
+        local container = ui.MainFrame and ui.MainFrame.Parent
         if not container then return end
 
         local objects = { Corners = {}, Bones = {}, Tracer = nil, NameTag = nil }
 
+        -- 4 Ecken á 2 Frames (horizontal + vertikal) = 100% Sicher ohne UIStroke!
         for i = 1, 4 do
-            local hLine = createDrawingLine(container); local vLine = createDrawingLine(container)
-            table.insert(objects.Corners, {h = hLine, v = vLine})
+            table.insert(objects.Corners, {h = createDrawingLine(container), v = createDrawingLine(container)})
         end
 
         for i = 1, #SkeletonPairs do table.insert(objects.Bones, createDrawingLine(container)) end
@@ -170,25 +171,24 @@ return function(ui, settings)
             local topScreen, topOnScreen = Camera:WorldToViewportPoint(topWorld)
             local bottomScreen, bottomOnScreen = Camera:WorldToViewportPoint(bottomWorld)
 
-            -- Live-Farben aus der Settings-Tabelle holen
             local isTeam = (player ~= LocalPlayer and player.Team == LocalPlayer.Team)
             local currentBoxColor = isTeam and settings.colors.Team or (player == LocalPlayer and settings.colors.Self or settings.colors.Box)
             local currentSkelColor = isTeam and settings.colors.Team or (player == LocalPlayer and settings.colors.Self or settings.colors.Skeleton)
             local currentTracerColor = isTeam and settings.colors.Team or settings.colors.Tracer
 
             ----------------------------------------
-            -- 1. CORNER BOXES & NAMETAG LOGIK
+            -- 1. BOX RENDER ENGINE
             ----------------------------------------
             if topOnScreen and bottomOnScreen then
                 local calculatedHeight = math.abs(topScreen.Y - bottomScreen.Y)
-                local height = math.clamp(calculatedHeight, 6, 700) * settings.espSizeMultiplier
+                local height = math.clamp(calculatedHeight, 6, 700) * (settings.espSizeMultiplier or 1)
                 local width = (height / 1.4)
                 local boxX = topScreen.X - (width / 2)
                 local boxY = topScreen.Y
 
                 if settings.espBoxes then
                     local cLength = math.clamp(width * 0.25, 4, 30)
-                    local cThick = 2
+                    local cThick = 1.5
 
                     local positions = {
                         {x = boxX, y = boxY, dx = 1, dy = 1},
@@ -230,7 +230,7 @@ return function(ui, settings)
             end
 
             ----------------------------------------
-            -- 2. 3D SKELETON LOGIK
+            -- 2. SKELETON RENDER ENGINE
             ----------------------------------------
             if settings.espSkeletons then
                 local boneIndex = 1
@@ -261,7 +261,7 @@ return function(ui, settings)
             end
 
             ----------------------------------------
-            -- 3. TRACERS LOGIK
+            -- 3. TRACER RENDER ENGINE
             ----------------------------------------
             if settings.espTracers and topOnScreen and player ~= LocalPlayer then
                 local line = objects.Tracer
@@ -283,7 +283,6 @@ return function(ui, settings)
         settings.espObjects[player.UserId] = objects
     end
 
-    -- Loop-Verbindungen herstellen
     local function beginEspLoop()
         for _, player in pairs(Players:GetPlayers()) do createESP(player) end
         settings.addConnection("espAdded", Players.PlayerAdded:Connect(createESP))
@@ -298,4 +297,3 @@ return function(ui, settings)
     beginEspLoop()
     return VisualsPage
 end
-
