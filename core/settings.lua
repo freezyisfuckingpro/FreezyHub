@@ -4,14 +4,24 @@ local settings = {
     noclipEnabled = false,
     farmEnabled = false,
     
+    -- ESP Settings
     espEnabled = false,
     selfEspEnabled = false,
     teamCheckEnabled = true,
     espSizeMultiplier = 1.0,
-    
     espBoxes = false,
     espSkeletons = false,
     espTracers = false,
+    
+    -- Aimbot & FOV Settings
+    aimbotEnabled = false,
+    aimbotTeamCheck = true,
+    aimbotSmoothing = 1,          -- Höher = Langsamer/Legiter, 1 = Insta-Lock
+    aimbotTargetPart = "Head",    -- "Head" oder "HumanoidRootPart"
+    
+    fovEnabled = false,
+    fovRadius = 100,             -- Größe des Kreises
+    fovColor = Color3.fromRGB(255, 255, 255),
     
     flySpeed = 50,
     farmDelay = 1.5,

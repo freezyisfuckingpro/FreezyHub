@@ -15,6 +15,7 @@ ui.CreateMainContainer(settings)
 -- Tabs laden
 loadstring(game:HttpGet(baseUrl .. "tabs/main_tab.lua"))()(ui, settings)
 loadstring(game:HttpGet(baseUrl .. "tabs/visuals_tab.lua"))()(ui, settings)
+loadstring(game:HttpGet(baseUrl .. "tabs/aimbot_tab.lua"))()(ui, settings) -- Hier wird das neue Tab eingehängt!
 
 -- Start-Tab öffnen
 ui.ShowTab("Main")
