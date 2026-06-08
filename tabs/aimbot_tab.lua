@@ -132,25 +132,28 @@ return function(ui, settings)
         local mouseLocation = UserInputService:GetMouseLocation()
 
         for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-                local humanoid = player.Character.Humanoid
-                local targetPart = player.Character:FindFirstChild(settings.aimbotTargetPart)
-
-                if humanoid.Health > 0 and targetPart then
-                    if not settings.aimbotTeamCheck or player.Team ~= LocalPlayer.Team then
-                        local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
-                        
-                        if onScreen then
-                            local distanceToMouse = (Vector2.new(screenPos.X, screenPos.Y) - mouseLocation).Magnitude
-                            
-                            -- Überprüfen, ob der Spieler innerhalb des eingestellten FOV-Kreises ist
-                            if distanceToMouse < settings.fovRadius and distanceToMouse < shortestDistance then
-                                closestPlayer = player
-                                shortestDistance = distanceToMouse
-                            end
-                        end
-                    end
-                end
+            -- Sichere null-checks
+            if player == LocalPlayer or not player.Character then continue end
+            
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if not humanoid or humanoid.Health <= 0 then continue end
+            
+            local targetPart = player.Character:FindFirstChild(settings.aimbotTargetPart)
+            if not targetPart then continue end
+            
+            -- Team-Check Logik FIXED
+            if settings.aimbotTeamCheck and player.Team == LocalPlayer.Team then continue end
+            
+            -- FOV-Berechnung
+            local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+            if not onScreen then continue end
+            
+            local distanceToMouse = (Vector2.new(screenPos.X, screenPos.Y) - mouseLocation).Magnitude
+            
+            -- Nur Target wenn in FOV Radius
+            if distanceToMouse < settings.fovRadius and distanceToMouse < shortestDistance then
+                closestPlayer = player
+                shortestDistance = distanceToMouse
             end
         end
         return closestPlayer
@@ -166,19 +169,21 @@ return function(ui, settings)
 
     -- Der eigentliche Aimbot-Loop (Läuft jeden Frame)
     settings.addConnection("aimbotLoop", RunService.RenderStepped:Connect(function()
-        if settings.aimbotEnabled and isRightMouseDown then
-            local targetPlayer = getClosestPlayerToMouse()
-            if targetPlayer and targetPlayer.Character then
-                local targetPart = targetPlayer.Character:FindFirstChild(settings.aimbotTargetPart)
-                if targetPart then
-                    -- Kamera-Vektor-Berechnung mit Smoothing-Teiler
-                    local currentCamCFrame = Camera.CFrame
-                    local targetCFrame = CFrame.new(currentCamCFrame.Position, targetPart.Position)
-                    
-                    Camera.CFrame = currentCamCFrame:Lerp(targetCFrame, 1 / (settings.aimbotSmoothing or 1))
-                end
-            end
-        end
+        if not (settings.aimbotEnabled and isRightMouseDown) then return end
+        
+        local targetPlayer = getClosestPlayerToMouse()
+        if not targetPlayer or not targetPlayer.Character then return end
+        
+        local targetPart = targetPlayer.Character:FindFirstChild(settings.aimbotTargetPart)
+        if not targetPart then return end
+        
+        -- Sanfte Kamera-Bewegung mit Smoothing
+        local smoothing = math.max(1, settings.aimbotSmoothing or 1)
+        local lerpSpeed = 1 / smoothing
+        
+        local currentCamCFrame = Camera.CFrame
+        local targetCFrame = CFrame.new(currentCamCFrame.Position, targetPart.Position)
+        Camera.CFrame = currentCamCFrame:Lerp(targetCFrame, math.min(lerpSpeed, 1))
     end))
 
     -- Cleanup, falls der Hub geschlossen wird
