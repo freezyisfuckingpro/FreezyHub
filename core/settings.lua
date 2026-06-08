@@ -29,3 +29,4 @@ function settings.addConnection(name, connection)
 end
 
 return settings
+--d

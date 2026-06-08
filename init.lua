@@ -19,3 +19,4 @@ tabs.visuals = loadstring(game:HttpGet(baseUrl .. "tabs/visuals_tab.lua"))()(ui,
 
 -- Start-Tab öffnen
 ui.ShowTab("Main")
+-- d
