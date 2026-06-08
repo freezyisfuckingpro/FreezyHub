@@ -3,6 +3,7 @@ return function(ui, settings)
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
     local Players = game:GetService("Players")
+    local CoreGui = game:GetService("CoreGui")
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
@@ -125,13 +126,12 @@ return function(ui, settings)
     end
 
     local function createESP(player)
-        -- Sucht dynamisch nach deiner aktiven UI-Instanz im CoreGui
-        local container = ui.MainFrame and ui.MainFrame.Parent
+        -- Sucht die ScreenGui "FreezyHubV2" direkt im CoreGui
+        local container = CoreGui:FindFirstChild("FreezyHubV2")
         if not container then return end
 
         local objects = { Corners = {}, Bones = {}, Tracer = nil, NameTag = nil }
 
-        -- 4 Ecken á 2 Frames (horizontal + vertikal) = 100% Sicher ohne UIStroke!
         for i = 1, 4 do
             table.insert(objects.Corners, {h = createDrawingLine(container), v = createDrawingLine(container)})
         end
