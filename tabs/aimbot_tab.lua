@@ -178,4 +178,5 @@ return function(ui, settings)
     settings.addConnection("fovCleanup", {Disconnect = function() FovCircle:Destroy() end})
 
     return AimbotPage
-end
+end 
+--d
