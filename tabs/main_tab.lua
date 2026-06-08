@@ -1,10 +1,24 @@
--- FreezyHub/tabs/main_tab.lua
+-- tabs/main_tab.lua
 return function(ui, settings)
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
+
+    -- Registrierung aller Buttons in der Navigationsleiste
+    ui.CreateNavTab("Main Hacks", "🏠", "Main")
+    ui.CreateNavTab("Visuals", "👁", "Visuals")
+    ui.CreateNavTab("Player", "👤", "Player") 
+    ui.CreateNavTab("Movement", "🏃", "Movement")
+    ui.CreateNavTab("World", "🌐", "World")
+    ui.CreateNavTab("Misc", "⚙", "Misc")
+
+    -- Generiere leere Platzhalter-Seiten für die restlichen Menüs
+    ui.CreatePage("Player")
+    ui.CreatePage("Movement")
+    ui.CreatePage("World")
+    ui.CreatePage("Misc")
 
     local MainPage = ui.CreatePage("Main")
     

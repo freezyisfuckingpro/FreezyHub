@@ -1,7 +1,4 @@
--- FreezyHub/core/settings.lua
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
+-- core/settings.lua
 local settings = {
     flyEnabled = false,
     noclipEnabled = false,

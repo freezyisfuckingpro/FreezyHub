@@ -1,8 +1,8 @@
--- FreezyHub/init.lua
+-- init.lua
 local CoreGui = game:GetService("CoreGui")
 if CoreGui:FindFirstChild("FreezyHubV2") then CoreGui.FreezyHubV2:Destroy() end
 
--- KORRIGIERTER PFAD: Da die Ordner direkt im Hauptverzeichnis liegen, fällt das hintere "/FreezyHub" weg!
+-- Dein spezifischer GitHub-Pfad zu den Raw-Dateien
 local baseUrl = "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/main/"
 
 -- Laden der Module direkt von GitHub via HttpGet
@@ -10,7 +10,7 @@ local settings = loadstring(game:HttpGet(baseUrl .. "core/settings.lua"))()
 local ui = loadstring(game:HttpGet(baseUrl .. "core/ui_library.lua"))()
 
 -- Haupt-UI-Container initialisieren
-local MainFrame = ui.CreateMainContainer()
+local MainFrame = ui.CreateMainContainer(settings)
 
 -- Tabs von GitHub laden und Parameter übergeben
 local tabs = {}
