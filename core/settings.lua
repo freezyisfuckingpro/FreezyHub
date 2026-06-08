@@ -10,8 +10,8 @@ local settings = {
     espSizeMultiplier = 1.0,
     
     espBoxes = false,
-    settings.espSkeletons = false,
-    settings.espTracers = false,
+    espSkeletons = false,
+    espTracers = false,
     
     flySpeed = 50,
     farmDelay = 1.5,
