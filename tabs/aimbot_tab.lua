@@ -98,23 +98,30 @@ return function(ui, settings)
     ----------------------------------------
     -- FOV KREIS DRAWING ENGINE (Sicher über Roblox Drawing API)
     ----------------------------------------
-    local FovCircle = Drawing.new("Circle")
-    FovCircle.Thickness = 1.5
-    FovCircle.NumSides = 64
-    FovCircle.Filled = false
-    FovCircle.Transparency = 0.7
-
-    settings.addConnection("fovRenderLoop", RunService.RenderStepped:Connect(function()
-        if settings.fovEnabled and settings.aimbotEnabled then
-            local mouseLocation = UserInputService:GetMouseLocation()
-            FovCircle.Position = Vector2.new(mouseLocation.X, mouseLocation.Y)
-            FovCircle.Radius = settings.fovRadius
-            FovCircle.Color = settings.colors.Enemy
-            FovCircle.Visible = true
-        else
-            FovCircle.Visible = false
+    local FovCircle = nil
+    local hasDrawing = pcall(function()
+        FovCircle = Drawing.new("Circle")
+        if FovCircle then
+            FovCircle.Thickness = 1.5
+            FovCircle.NumSides = 64
+            FovCircle.Filled = false
+            FovCircle.Transparency = 0.7
         end
-    end))
+    end)
+
+    if FovCircle then
+        settings.addConnection("fovRenderLoop", RunService.RenderStepped:Connect(function()
+            if settings.fovEnabled and settings.aimbotEnabled then
+                local mouseLocation = UserInputService:GetMouseLocation()
+                FovCircle.Position = Vector2.new(mouseLocation.X, mouseLocation.Y)
+                FovCircle.Radius = settings.fovRadius
+                FovCircle.Color = settings.colors.Enemy
+                FovCircle.Visible = true
+            else
+                FovCircle.Visible = false
+            end
+        end))
+    end
 
     ----------------------------------------
     -- AIMBOT MATHEMATIK & LOCK SYSTEM
@@ -175,8 +182,9 @@ return function(ui, settings)
     end))
 
     -- Cleanup, falls der Hub geschlossen wird
-    settings.addConnection("fovCleanup", {Disconnect = function() FovCircle:Destroy() end})
+    if FovCircle then
+        settings.addConnection("fovCleanup", {Disconnect = function() FovCircle:Destroy() end})
+    end
 
     return AimbotPage
-end 
---d
+end
