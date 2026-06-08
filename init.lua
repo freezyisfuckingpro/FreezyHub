@@ -2,8 +2,8 @@
 local CoreGui = game:GetService("CoreGui")
 if CoreGui:FindFirstChild("FreezyHubV2") then CoreGui.FreezyHubV2:Destroy() end
 
--- Dein spezifischer GitHub-Pfad zu den Raw-Dateien
-local baseUrl = "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/main/FreezyHub/"
+-- KORRIGIERTER PFAD: Da die Ordner direkt im Hauptverzeichnis liegen, fällt das hintere "/FreezyHub" weg!
+local baseUrl = "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/main/"
 
 -- Laden der Module direkt von GitHub via HttpGet
 local settings = loadstring(game:HttpGet(baseUrl .. "core/settings.lua"))()
