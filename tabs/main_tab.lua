@@ -13,13 +13,14 @@ return function(ui, settings)
     ui.CreateNavTab("Movement", "🏃", "Movement")
     ui.CreateNavTab("World", "🌐", "World")
     ui.CreateNavTab("Misc", "⚙", "Misc")
+    ui.CreateNavTab("Aimbot & FOV", "🎯", "Aimbot")
 
     -- Leere Platzhalter-Seiten für die restlichen Menüs erzeugen
     ui.CreatePage("Player")
     ui.CreatePage("Movement")
     ui.CreatePage("World")
     ui.CreatePage("Misc")
-
+    ui.CreatePage("Aimbot")
     local MainPage = ui.CreatePage("Main")
     
     -- Fly Card
