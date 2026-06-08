@@ -30,3 +30,14 @@ end
 
 return settings
 --d
+settings.espBoxes = false
+settings.espSkeletons = false
+settings.espTracers = false
+-- Deine bestehenden Farben- und Verbindungstabellen bleiben gleichZZ
+settings.colors = {
+    Self = Color3.fromRGB(168, 85, 247),   -- Lila für dich selbst
+    Box = Color3.fromRGB(239, 68, 68),    -- Rot für Boxen
+    Skeleton = Color3.fromRGB(255, 255, 0),-- Gelb für Skeletons
+    Tracer = Color3.fromRGB(56, 189, 248), -- Cyan für Tracers
+    Team = Color3.fromRGB(34, 197, 94)     -- Grün für dein Team
+}
