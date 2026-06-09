@@ -2,10 +2,10 @@
 local CoreGui = game:GetService("CoreGui")
 if CoreGui:FindFirstChild("FreezyHubV2") then CoreGui.FreezyHubV2:Destroy() end
 
--- Live-Quellen: zuerst master, dann main als Fallback
+-- Live-Quellen: zuerst main, dann master als Fallback
 local baseUrls = {
-    "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/master/",
-    "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/main/"
+    "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/main/",
+    "https://raw.githubusercontent.com/freezyisfuckingpro/FreezyHub/master/"
 }
 
 local function loadRemoteFile(path)
