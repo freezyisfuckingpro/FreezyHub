@@ -52,23 +52,19 @@ return function(ui, settings)
     Scroll.BackgroundTransparency = 1
     Scroll.BorderSizePixel = 0
     Scroll.ScrollBarThickness = 4
+    Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Scroll.ScrollDirection = Enum.ScrollDirection.Y
-    Scroll.ClipsDescendants = true
 
-    local ListHolder = Instance.new("Frame", Scroll)
-    ListHolder.Size = UDim2.new(1, -8, 0, 0)
-    ListHolder.BackgroundTransparency = 1
-    ListHolder.AutomaticSize = Enum.AutomaticSize.Y
-
-    local ListLayout = Instance.new("UIListLayout", ListHolder)
+    local ListLayout = Instance.new("UIListLayout", Scroll)
     ListLayout.Padding = UDim.new(0, 6)
     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     local function createPlayerRow(player)
         local row = Instance.new("Frame")
-        row.Name = "PlayerRow"
-        row.Parent = ListHolder
-        row.Size = UDim2.new(1, 0, 0, 54)
+        row.Parent = Scroll
+        row.Size = UDim2.new(1, -6, 0, 54)
+        row.LayoutOrder = #Scroll:GetChildren()
         row.BackgroundColor3 = Color3.fromRGB(18, 27, 47)
         row.BorderSizePixel = 0
         Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
@@ -139,8 +135,8 @@ return function(ui, settings)
     end
 
     local function refreshPlayerList()
-        for _, child in ipairs(ListHolder:GetChildren()) do
-            if child.Name == "PlayerRow" then
+        for _, child in ipairs(Scroll:GetChildren()) do
+            if child:IsA("Frame") then
                 child:Destroy()
             end
         end
@@ -153,8 +149,6 @@ return function(ui, settings)
         for _, player in ipairs(list) do
             createPlayerRow(player)
         end
-
-        Scroll.CanvasSize = UDim2.new(0, 0, 0, math.max(0, #list * 60))
     end
 
     RefreshBtn.MouseButton1Click:Connect(function()
