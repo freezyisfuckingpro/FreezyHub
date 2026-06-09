@@ -150,16 +150,20 @@ return function(ui, settings)
         end)
 
         for _, player in ipairs(list) do
-            if player ~= LocalPlayer then
-                createPlayerRow(player)
-            end
+            createPlayerRow(player)
         end
     end
 
-    RefreshBtn.MouseButton1Click:Connect(refreshPlayerList)
-    Players.PlayerAdded:Connect(refreshPlayerList)
-    Players.PlayerRemoving:Connect(refreshPlayerList)
-    refreshPlayerList()
+    RefreshBtn.MouseButton1Click:Connect(function()
+        task.defer(refreshPlayerList)
+    end)
+    Players.PlayerAdded:Connect(function()
+        task.defer(refreshPlayerList)
+    end)
+    Players.PlayerRemoving:Connect(function()
+        task.defer(refreshPlayerList)
+    end)
+    task.defer(refreshPlayerList)
     
     local function startFly()
         if settings.connections.fly then settings.connections.fly:Disconnect() end
