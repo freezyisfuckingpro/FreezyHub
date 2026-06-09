@@ -46,15 +46,6 @@ return function(ui, settings)
     RefreshBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 54)
     Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 8)
 
-    local ListFrame = Instance.new("Frame", PlayerCard)
-    ListFrame.Size = UDim2.new(1, -24, 1, -80)
-    ListFrame.Position = UDim2.new(0, 12, 0, 78)
-    ListFrame.BackgroundTransparency = 1
-
-    local ListLayout = Instance.new("UIListLayout", ListFrame)
-    ListLayout.Padding = UDim.new(0, 6)
-    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
     local Scroll = Instance.new("ScrollingFrame", PlayerCard)
     Scroll.Size = UDim2.new(1, -24, 1, -82)
     Scroll.Position = UDim2.new(0, 12, 0, 78)
@@ -63,11 +54,17 @@ return function(ui, settings)
     Scroll.ScrollBarThickness = 4
     Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Scroll.ScrollDirection = Enum.ScrollDirection.Y
+
+    local ListLayout = Instance.new("UIListLayout", Scroll)
+    ListLayout.Padding = UDim.new(0, 6)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     local function createPlayerRow(player)
         local row = Instance.new("Frame")
         row.Parent = Scroll
-        row.Size = UDim2.new(1, 0, 0, 54)
+        row.Size = UDim2.new(1, -6, 0, 54)
+        row.LayoutOrder = #Scroll:GetChildren()
         row.BackgroundColor3 = Color3.fromRGB(18, 27, 47)
         row.BorderSizePixel = 0
         Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
