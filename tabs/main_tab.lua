@@ -46,6 +46,15 @@ return function(ui, settings)
     RefreshBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 54)
     Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 8)
 
+    local ListFrame = Instance.new("Frame", PlayerCard)
+    ListFrame.Size = UDim2.new(1, -24, 1, -80)
+    ListFrame.Position = UDim2.new(0, 12, 0, 78)
+    ListFrame.BackgroundTransparency = 1
+
+    local ListLayout = Instance.new("UIListLayout", ListFrame)
+    ListLayout.Padding = UDim.new(0, 6)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
     local Scroll = Instance.new("ScrollingFrame", PlayerCard)
     Scroll.Size = UDim2.new(1, -24, 1, -82)
     Scroll.Position = UDim2.new(0, 12, 0, 78)
@@ -54,17 +63,11 @@ return function(ui, settings)
     Scroll.ScrollBarThickness = 4
     Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Scroll.ScrollDirection = Enum.ScrollDirection.Y
-
-    local ListLayout = Instance.new("UIListLayout", Scroll)
-    ListLayout.Padding = UDim.new(0, 6)
-    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     local function createPlayerRow(player)
         local row = Instance.new("Frame")
         row.Parent = Scroll
-        row.Size = UDim2.new(1, -6, 0, 54)
-        row.LayoutOrder = #Scroll:GetChildren()
+        row.Size = UDim2.new(1, 0, 0, 54)
         row.BackgroundColor3 = Color3.fromRGB(18, 27, 47)
         row.BorderSizePixel = 0
         Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
@@ -178,12 +181,12 @@ return function(ui, settings)
             humanoid.PlatformStand = true
 
             local moveDirection = Vector3.new(0, 0, 0)
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDirection = moveDirection + Camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDirection = moveDirection - Camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDirection = moveDirection - Camera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDirection = moveDirection + Camera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDirection = moveDirection + Vector3.new(0, 1, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDirection = moveDirection - Vector3.new(0, 1, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDirection += Camera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDirection -= Camera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDirection -= Camera.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDirection += Camera.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDirection += Vector3.new(0, 1, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDirection -= Vector3.new(0, 1, 0) end
 
             root.AssemblyLinearVelocity = moveDirection * settings.flySpeed
         end)
