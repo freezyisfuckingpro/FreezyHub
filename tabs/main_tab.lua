@@ -1,4 +1,4 @@
-﻿-- tabs/main_tab.lua
+-- tabs/main_tab.lua
 return function(ui, settings)
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
@@ -150,20 +150,16 @@ return function(ui, settings)
         end)
 
         for _, player in ipairs(list) do
-            createPlayerRow(player)
+            if player ~= LocalPlayer then
+                createPlayerRow(player)
+            end
         end
     end
 
-    RefreshBtn.MouseButton1Click:Connect(function()
-        task.defer(refreshPlayerList)
-    end)
-    Players.PlayerAdded:Connect(function()
-        task.defer(refreshPlayerList)
-    end)
-    Players.PlayerRemoving:Connect(function()
-        task.defer(refreshPlayerList)
-    end)
-    task.defer(refreshPlayerList)
+    RefreshBtn.MouseButton1Click:Connect(refreshPlayerList)
+    Players.PlayerAdded:Connect(refreshPlayerList)
+    Players.PlayerRemoving:Connect(refreshPlayerList)
+    refreshPlayerList()
     
     local function startFly()
         if settings.connections.fly then settings.connections.fly:Disconnect() end
