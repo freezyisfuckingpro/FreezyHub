@@ -126,6 +126,10 @@ return function(ui, settings)
     ----------------------------------------
     -- AIMBOT MATHEMATIK & LOCK SYSTEM
     ----------------------------------------
+    local lastTargetPos = nil
+    local targetVelocity = Vector3.new(0, 0, 0)
+    local lastUpdateTime = tick()
+    
     local function getClosestPlayerToMouse()
         local closestPlayer = nil
         local shortestDistance = math.huge
@@ -164,10 +168,10 @@ return function(ui, settings)
         if input.UserInputType == Enum.UserInputType.MouseButton2 then isRightMouseDown = true end
     end))
     settings.addConnection("aimInputEnded", UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton2 then isRightMouseDown = false end
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then isRightMouseDown = false; lastTargetPos = nil end
     end))
 
-    -- Der eigentliche Aimbot-Loop (Läuft jeden Frame)
+    -- Der eigentliche Aimbot-Loop mit verbessertem Smoothing
     settings.addConnection("aimbotLoop", RunService.RenderStepped:Connect(function()
         if not (settings.aimbotEnabled and isRightMouseDown) then return end
         
@@ -177,13 +181,29 @@ return function(ui, settings)
         local targetPart = targetPlayer.Character:FindFirstChild(settings.aimbotTargetPart)
         if not targetPart then return end
         
-        -- Sanfte Kamera-Bewegung mit Smoothing
-        local smoothing = math.max(1, settings.aimbotSmoothing or 1)
-        local lerpSpeed = 1 / smoothing
+        local currentTime = tick()
+        local deltaTime = currentTime - lastUpdateTime
+        lastUpdateTime = currentTime
         
+        -- Berechne Velocity basierend auf Position-Veränderung
+        local targetPos = targetPart.Position
+        if lastTargetPos then
+            local posDelta = targetPos - lastTargetPos
+            targetVelocity = posDelta / math.max(deltaTime, 0.001)
+        end
+        lastTargetPos = targetPos
+        
+        -- Prediction: Wo wird der Gegner in der nächsten Millisekunde sein?
+        local predictDistance = settings.aimbotSmoothing / 10
+        local predictedPos = targetPos + (targetVelocity * predictDistance)
+        
+        -- Sanfte Kamera-Ausrichtung mit exponentiellem Glätten
         local currentCamCFrame = Camera.CFrame
-        local targetCFrame = CFrame.new(currentCamCFrame.Position, targetPart.Position)
-        Camera.CFrame = currentCamCFrame:Lerp(targetCFrame, math.min(lerpSpeed, 1))
+        local targetCFrame = CFrame.new(currentCamCFrame.Position, predictedPos)
+        
+        -- Exponentielles Smoothing statt lineares Lerp
+        local smoothing = math.max(0.05, math.min(1, 1 / (settings.aimbotSmoothing * 2)))
+        Camera.CFrame = currentCamCFrame:Lerp(targetCFrame, smoothing)
     end))
 
     -- Cleanup, falls der Hub geschlossen wird
