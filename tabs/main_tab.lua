@@ -44,13 +44,13 @@ return function(ui, settings)
     local CardTp = ui.CreateCard(MainPage, "TELEPORT SYSTEM", UDim2.new(0, 310, 0, 160), UDim2.new(0, 0, 0, 200), "📍")
     -- Save & TP Buttons wie vorher...
 
--- ==========================================
-    -- GAMEPASS UNLOCKER - Speziell optimiert für +1 Speed Tastatur Flucht
+    -- ==========================================
+    -- GAMEPASS UNLOCKER - Speziell für +1 Speed (Unendlichkeitsspur)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Versucht die 2999 Robux Spur + alle Gamepasses freizuschalten"
+    UnlockerDesc.Text = "Unendlichkeitsspur + alle Boosts (2999 Robux)"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -65,83 +65,76 @@ return function(ui, settings)
     UnlockerStatus.Font = Enum.Font.GothamBold
     UnlockerStatus.TextSize = 11
     UnlockerStatus.BackgroundTransparency = 1
-    UnlockerStatus.TextXAlignment = Enum.TextXAlignment.Left
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 AGGRESSIV AKTIV" or "⚪ Bereit"
+        UnlockerStatus.Text = state and "🟢 UNENDLICHKEITSSPUR AKTIV" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
-    local function enableUnlocker(state)
+    local function enableUltraUnlocker(state)
         settings.gamepassUnlockerEnabled = state
         if not state then return end
 
-        -- Standard Marketplace Hooks
+        -- 1. Normale Hooks
         pcall(function()
             hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
             hookfunction(MarketplaceService.PlayerOwnsAsset, function() return true end)
         end)
 
         pcall(function()
-            local oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local old = hookmetamethod(game, "__namecall", function(self, ...)
                 local method = getnamecallmethod()
                 if method:find("Owns") or method:find("Purchase") or method:find("Prompt") then
                     return true
                 end
-                return oldNamecall(self, ...)
+                return old(self, ...)
             end)
         end)
 
-        -- Sehr aggressiver Loop für dieses spezielle Spiel
+        -- 2. Sehr aggressiver Loop für dieses Spiel
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(0.6)
+                task.wait(0.5)
 
-                -- Leaderstats + Speed Values
+                -- Leaderstats + alle Speed-Werte
                 local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
                 if leaderstats then
                     for _, v in ipairs(leaderstats:GetDescendants()) do
                         if v:IsA("NumberValue") or v:IsA("IntValue") then
-                            v.Value = 999999999
+                            v.Value = 999999999999
                         end
                     end
                 end
 
-                -- Alle möglichen Gamepass / Spur / Speed Werte
-                for _, v in ipairs(LocalPlayer:GetDescendants()) do
-                    local name = v.Name:lower()
-                    if name:find("speed") or name:find("spur") or name:find("pass") or name:find("vip") or name:find("multi") or name:find("boost") then
-                        if v:IsA("BoolValue") then 
-                            v.Value = true 
-                        elseif v:IsA("NumberValue") or v:IsA("IntValue") then 
-                            v.Value = 999999999 
+                -- Alle möglichen Spur / Speed / Boost Values
+                for _, v in ipairs(game:GetDescendants()) do
+                    local n = v.Name:lower()
+                    if n:find("spur") or n:find("unendlich") or n:find("speed") or n:find("multi") or n:find("boost") then
+                        if v:IsA("BoolValue") then v.Value = true end
+                        if v:IsA("NumberValue") or v:IsA("IntValue") then 
+                            v.Value = 999999999999 
                         end
                     end
                 end
 
-                -- Häufige RemoteEvents abfangen
-                for _, remote in ipairs(workspace:GetDescendants()) do
-                    if remote:IsA("RemoteEvent") and remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") then
-                        remote:FireServer() -- Versuch zu triggern
-                    end
-                end
-
+                -- Attribute überschreiben
+                LocalPlayer:SetAttribute("Unendlichkeitsspur", true)
                 LocalPlayer:SetAttribute("SpurOwned", true)
-                LocalPlayer:SetAttribute("Gamepass", true)
-                LocalPlayer:SetAttribute("SpeedMultiplier", 999999)
+                LocalPlayer:SetAttribute("SpeedMultiplier", 999999999)
+                LocalPlayer:SetAttribute("Boost", 999999999)
             end
         end)
 
-        print("FreezyHub → +1 Speed Spur Unlocker gestartet")
+        print("FreezyHub Ultra Unlocker für Unendlichkeitsspur gestartet")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
-        enableUnlocker(state)
+        enableUltraUnlocker(state)
         updateStatus(state)
     end)
 
     if settings.gamepassUnlockerEnabled then
-        task.defer(enableUnlocker, true)
+        task.defer(enableUltraUnlocker, true)
     end
 
     return MainPage
