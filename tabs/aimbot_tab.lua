@@ -6,40 +6,36 @@ return function(ui, settings)
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
-    -- Settings initialisieren
-    settings.aimbotEnabled = settings.aimbotEnabled or false
+    -- Fehlende Variablen in den Settings dynamisch nachladen (damit es nicht abstürzt)
     settings.silentAimEnabled = settings.silentAimEnabled or false
     settings.triggerbotEnabled = settings.triggerbotEnabled or false
-    settings.aimbotTeamCheck = settings.aimbotTeamCheck or true
-    settings.aimbotSmoothing = settings.aimbotSmoothing or 6
-    settings.aimbotTargetPart = settings.aimbotTargetPart or "Head"
-    settings.fovEnabled = settings.fovEnabled or true
-    settings.fovRadius = settings.fovRadius or 140
 
-    -- UI Seiten-Erstellung
-    local AimbotPage = ui.CreatePage("Aimbot")
-    local CardAim = ui.CreateCard(AimbotPage, "AIMBOT SYSTEM", UDim2.new(0, 380, 0, 380), UDim2.new(0, 0, 0, 0), "🎯")
+    -- === WICHTIG: HIER WIRD DIE PAGE AUS DEINEM FREEZY HUB GEHOLT ===
+    -- Da die Seite "Aimbot & FOV" im Screenshot schon da ist, holen wir sie uns,
+    -- anstatt eine komplett neue, leere Seite zu erstellen.
+    local AimbotPage = ui.GetPage and ui.GetPage("Aimbot & FOV") or ui.CreatePage("Aimbot & FOV")
 
-    ui.CreateInlineToggle(CardAim, "🎯 Camera Aimbot (Rechtsklick halten)", 55, settings.aimbotEnabled, function(s) settings.aimbotEnabled = s end)
-    ui.CreateInlineToggle(CardAim, "🌍 Silent Aim (Schießen durch Wände)", 90, settings.silentAimEnabled, function(s) settings.silentAimEnabled = s end)
-    ui.CreateInlineToggle(CardAim, "🔫 Triggerbot (Auto Shoot)", 125, settings.triggerbotEnabled, function(s) settings.triggerbotEnabled = s end)
-    ui.CreateInlineToggle(CardAim, "🛡 Team Check", 160, settings.aimbotTeamCheck, function(s) settings.aimbotTeamCheck = s end)
-    ui.CreateInlineToggle(CardAim, "⭕ FOV Kreis anzeigen", 195, settings.fovEnabled, function(s) settings.fovEnabled = s end)
-
-    -- Target Part Switch Button
-    local partBtn = Instance.new("TextButton", CardAim)
-    partBtn.Size = UDim2.new(0, 160, 0, 32)
-    partBtn.Position = UDim2.new(0, 16, 0, 235)
-    partBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-    partBtn.Text = settings.aimbotTargetPart == "Head" and "HEAD" or "TORSO"
-    partBtn.Font = Enum.Font.GothamBold
-    partBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
-    Instance.new("UICorner", partBtn).CornerRadius = UDim.new(0, 6)
-
-    partBtn.MouseButton1Click:Connect(function()
-        settings.aimbotTargetPart = settings.aimbotTargetPart == "Head" and "HumanoidRootPart" or "Head"
-        partBtn.Text = settings.aimbotTargetPart == "Head" and "HEAD" or "TORSO"
-    end)
+    -- Wir fügen die neuen Toggles direkt in die bestehende UI ein.
+    -- Da Freezy Hub automatische Layouts nutzt, lassen wir die Zahlen-Offsets (55, 90, 125) weg!
+    
+    -- Überprüfen, ob die Library AddToggle oder CreateToggle nutzt
+    local toggleFunc = AimbotPage.AddToggle or AimbotPage.CreateToggle
+    
+    if toggleFunc then
+        toggleFunc(AimbotPage, "🌍 Silent Aim (Schießen durch Wände)", settings.silentAimEnabled, function(s) 
+            settings.silentAimEnabled = s 
+        end)
+        
+        toggleFunc(AimbotPage, "🔫 Triggerbot (Auto Shoot)", settings.triggerbotEnabled, function(s) 
+            settings.triggerbotEnabled = s 
+        end)
+    else
+        -- Fallback: Falls dein Hub die Toggles direkt über das globale UI-Objekt regelt
+        if ui.CreateToggle then
+            ui.CreateToggle(AimbotPage, "🌍 Silent Aim (Schießen durch Wände)", settings.silentAimEnabled, function(s) settings.silentAimEnabled = s end)
+            ui.CreateToggle(AimbotPage, "🔫 Triggerbot (Auto Shoot)", settings.triggerbotEnabled, function(s) settings.triggerbotEnabled = s end)
+        end
+    end
 
     -- ==================== LOGIC ====================
     local currentTarget = nil
@@ -70,58 +66,61 @@ return function(ui, settings)
         return closest
     end
 
-    -- Kombinierter, stabiler Tracking-Loop (Verhindert Lag-Spikes)
-    settings.addConnection("aimbotLoop", RunService.RenderStepped:Connect(function()
+    -- Zentraler, stabiler Tracking-Loop
+    settings.addConnection("aimbotTrackingLoop", RunService.RenderStepped:Connect(function()
         if settings.silentAimEnabled or settings.aimbotEnabled then
             currentTarget = getClosestPlayer()
         else
             currentTarget = nil
         end
 
+        -- Camera Aimbot Ausführung
         if settings.aimbotEnabled and currentTarget and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
             local part = currentTarget.Character:FindFirstChild(settings.aimbotTargetPart) or currentTarget.Character:FindFirstChild("Head")
             if part then
                 local targetCFrame = CFrame.new(Camera.CFrame.Position, part.Position)
-                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / math.max(settings.aimbotSmoothing, 1))
+                -- Nutzt das Smoothing aus deiner settings.lua
+                local smooth = math.max(settings.aimbotSmoothing, 1)
+                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / smooth)
             end
         end
     end))
 
-    -- Sicherer Triggerbot (Läuft in eigenem Thread, crasht die UI nicht mehr)
+    -- Sicherer Triggerbot (In separatem Thread, friert die UI nicht ein)
     task.spawn(function()
         while true do
-            task.wait() -- Entlastet die CPU
+            task.wait()
             if settings.triggerbotEnabled and currentTarget then
                 local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
                 if hum and hum.Health > 0 then
                     if mouse1click then
                         mouse1click()
-                        task.wait(0.08) -- Schussverzögerung (Sicherer Wert)
+                        task.wait(0.07) -- Kurze Verzögerung zwischen den automatischen Klicks
                     end
                 end
             end
         end
     end)
 
-    -- FOV Kreis mit Studio-Sicherheitscheck (Verhindert "nil value"-Absturz)
+    -- FOV Kreis Update (Nutzt fovColor aus deiner settings.lua)
     local fovCircle = nil
-    local pcallSuccess = pcall(function()
+    pcall(function()
         if Drawing and Drawing.new then
             fovCircle = Drawing.new("Circle")
-            fovCircle.Thickness = 1.6
-            fovCircle.NumSides = 80
+            fovCircle.Thickness = 1.5
+            fovCircle.NumSides = 60
             fovCircle.Filled = false
-            fovCircle.Transparency = 0.65
+            fovCircle.Transparency = 0.7
         end
     end)
 
-    if pcallSuccess and fovCircle then
-        settings.addConnection("fovCircleUpdate", RunService.RenderStepped:Connect(function()
+    if fovCircle then
+        settings.addConnection("fovCircleRender", RunService.RenderStepped:Connect(function()
             if settings.fovEnabled then
                 local mouse = UserInputService:GetMouseLocation()
                 fovCircle.Position = Vector2.new(mouse.X, mouse.Y)
                 fovCircle.Radius = settings.fovRadius
-                fovCircle.Color = Color3.fromRGB(255, 80, 80)
+                fovCircle.Color = settings.fovColor or Color3.fromRGB(255, 255, 255)
                 fovCircle.Visible = true
             else
                 fovCircle.Visible = false
@@ -129,6 +128,5 @@ return function(ui, settings)
         end))
     end
 
-    print("✅ UI-Tab erfolgreich ohne Abstürze geladen!")
     return AimbotPage
 end
