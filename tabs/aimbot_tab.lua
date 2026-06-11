@@ -6,38 +6,53 @@ return function(ui, settings)
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
-    -- Fehlende Variablen in den Settings dynamisch nachladen (damit es nicht abstürzt)
+    -- Settings (Sicherstellen, dass Variablen existieren)
+    settings.aimbotEnabled = settings.aimbotEnabled or false
     settings.silentAimEnabled = settings.silentAimEnabled or false
     settings.triggerbotEnabled = settings.triggerbotEnabled or false
+    settings.aimbotTeamCheck = settings.aimbotTeamCheck or true
+    settings.aimbotSmoothing = settings.aimbotSmoothing or 6
+    settings.aimbotTargetPart = settings.aimbotTargetPart or "Head"
+    settings.fovEnabled = settings.fovEnabled or false
+    settings.fovRadius = settings.fovRadius or 140
 
-    -- === WICHTIG: HIER WIRD DIE PAGE AUS DEINEM FREEZY HUB GEHOLT ===
-    -- Da die Seite "Aimbot & FOV" im Screenshot schon da ist, holen wir sie uns,
-    -- anstatt eine komplett neue, leere Seite zu erstellen.
-    local AimbotPage = ui.GetPage and ui.GetPage("Aimbot & FOV") or ui.CreatePage("Aimbot & FOV")
+    -- UI Page & Card Erstellung
+    local AimbotPage = ui.CreatePage("Aimbot")
+    local CardAim = ui.CreateCard(AimbotPage, "AIMBOT SYSTEM", UDim2.new(0, 380, 0, 380), UDim2.new(0, 0, 0, 0), "🎯")
 
-    -- Wir fügen die neuen Toggles direkt in die bestehende UI ein.
-    -- Da Freezy Hub automatische Layouts nutzt, lassen wir die Zahlen-Offsets (55, 90, 125) weg!
+    -- Alle Toggles nacheinander registrieren
+    ui.CreateInlineToggle(CardAim, "🎯 Camera Aimbot (Rechtsklick halten)", 55, settings.aimbotEnabled, function(s) settings.aimbotEnabled = s end)
+    ui.CreateInlineToggle(CardAim, "🌍 Silent Aim (Schießen durch Wände)", 90, settings.silentAimEnabled, function(s) settings.silentAimEnabled = s end)
+    ui.CreateInlineToggle(CardAim, "🔫 Triggerbot (Auto Shoot)", 125, settings.triggerbotEnabled, function(s) settings.triggerbotEnabled = s end)
+    ui.CreateInlineToggle(CardAim, "🛡 Team Check", 160, settings.aimbotTeamCheck, function(s) settings.aimbotTeamCheck = s end)
+    ui.CreateInlineToggle(CardAim, "⭕ FOV Kreis anzeigen", 195, settings.fovEnabled, function(s) settings.fovEnabled = s end)
+
+    -- Target Part Switch (Abgesichert und sauber positioniert)
+    local partBtn = Instance.new("TextButton")
+    partBtn.Parent = CardAim
+    partBtn.Size = UDim2.new(0, 160, 0, 32)
+    partBtn.Position = UDim2.new(0, 16, 0, 240) -- Leicht nach unten verschoben, um Überlappung zu verhindern
+    partBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+    partBtn.Text = settings.aimbotTargetPart == "Head" and "TARGET: HEAD" or "TARGET: TORSO"
+    partBtn.Font = Enum.Font.GothamBold
+    partBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
+    partBtn.TextSize = 14
     
-    -- Überprüfen, ob die Library AddToggle oder CreateToggle nutzt
-    local toggleFunc = AimbotPage.AddToggle or AimbotPage.CreateToggle
-    
-    if toggleFunc then
-        toggleFunc(AimbotPage, "🌍 Silent Aim (Schießen durch Wände)", settings.silentAimEnabled, function(s) 
-            settings.silentAimEnabled = s 
-        end)
-        
-        toggleFunc(AimbotPage, "🔫 Triggerbot (Auto Shoot)", settings.triggerbotEnabled, function(s) 
-            settings.triggerbotEnabled = s 
-        end)
-    else
-        -- Fallback: Falls dein Hub die Toggles direkt über das globale UI-Objekt regelt
-        if ui.CreateToggle then
-            ui.CreateToggle(AimbotPage, "🌍 Silent Aim (Schießen durch Wände)", settings.silentAimEnabled, function(s) settings.silentAimEnabled = s end)
-            ui.CreateToggle(AimbotPage, "🔫 Triggerbot (Auto Shoot)", settings.triggerbotEnabled, function(s) settings.triggerbotEnabled = s end)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = partBtn
+
+    partBtn.MouseButton1Click:Connect(function()
+        if settings.aimbotTargetPart == "Head" then
+            settings.aimbotTargetPart = "HumanoidRootPart"
+            partBtn.Text = "TARGET: TORSO"
+        else
+            settings.aimbotTargetPart = "Head"
+            partBtn.Text = "TARGET: HEAD"
         end
-    end
+    end)
 
-    -- ==================== LOGIC ====================
+    -- ==================== AIMBOT LOGIC ====================
     local currentTarget = nil
 
     local function getClosestPlayer()
@@ -66,8 +81,8 @@ return function(ui, settings)
         return closest
     end
 
-    -- Zentraler, stabiler Tracking-Loop
-    settings.addConnection("aimbotTrackingLoop", RunService.RenderStepped:Connect(function()
+    -- Kombinierter, lag-freier Haupt-Loop für Aimbot & Target-Abfrage
+    settings.addConnection("aimbotCoreLoop", RunService.RenderStepped:Connect(function()
         if settings.silentAimEnabled or settings.aimbotEnabled then
             currentTarget = getClosestPlayer()
         else
@@ -79,48 +94,47 @@ return function(ui, settings)
             local part = currentTarget.Character:FindFirstChild(settings.aimbotTargetPart) or currentTarget.Character:FindFirstChild("Head")
             if part then
                 local targetCFrame = CFrame.new(Camera.CFrame.Position, part.Position)
-                -- Nutzt das Smoothing aus deiner settings.lua
                 local smooth = math.max(settings.aimbotSmoothing, 1)
                 Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / smooth)
             end
         end
     end))
 
-    -- Sicherer Triggerbot (In separatem Thread, friert die UI nicht ein)
+    -- ISOLIERTER TRIGGERBOT (Crasht jetzt nicht mehr den Render-Thread!)
     task.spawn(function()
         while true do
-            task.wait()
+            task.wait() -- Verhindert die "Script Exhaustion" Fehlermeldung
             if settings.triggerbotEnabled and currentTarget then
                 local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
                 if hum and hum.Health > 0 then
                     if mouse1click then
                         mouse1click()
-                        task.wait(0.07) -- Kurze Verzögerung zwischen den automatischen Klicks
+                        task.wait(0.08) -- Schuss-Verzögerung
                     end
                 end
             end
         end
     end)
 
-    -- FOV Kreis Update (Nutzt fovColor aus deiner settings.lua)
+    -- FOV Kreis mit Fail-Safe (Verhindert Absturz in Roblox Studio)
     local fovCircle = nil
     pcall(function()
         if Drawing and Drawing.new then
             fovCircle = Drawing.new("Circle")
-            fovCircle.Thickness = 1.5
-            fovCircle.NumSides = 60
+            fovCircle.Thickness = 1.6
+            fovCircle.NumSides = 80
             fovCircle.Filled = false
-            fovCircle.Transparency = 0.7
+            fovCircle.Transparency = 0.65
         end
     end)
 
     if fovCircle then
-        settings.addConnection("fovCircleRender", RunService.RenderStepped:Connect(function()
+        settings.addConnection("fovCircleUpdate", RunService.RenderStepped:Connect(function()
             if settings.fovEnabled then
                 local mouse = UserInputService:GetMouseLocation()
                 fovCircle.Position = Vector2.new(mouse.X, mouse.Y)
                 fovCircle.Radius = settings.fovRadius
-                fovCircle.Color = settings.fovColor or Color3.fromRGB(255, 255, 255)
+                fovCircle.Color = Color3.fromRGB(255, 80, 80)
                 fovCircle.Visible = true
             else
                 fovCircle.Visible = false
@@ -128,5 +142,6 @@ return function(ui, settings)
         end))
     end
 
+    print("✅ Aimbot Tab erfolgreich geladen mit Silent Aim + Triggerbot")
     return AimbotPage
 end
