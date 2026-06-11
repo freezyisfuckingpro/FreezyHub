@@ -17,7 +17,6 @@ return function(ui, settings)
     settings.fovRadius = settings.fovRadius or 140
 
     local AimbotPage = ui.CreatePage("Aimbot")
-
     local CardAim = ui.CreateCard(AimbotPage, "AIMBOT SYSTEM", UDim2.new(0, 380, 0, 380), UDim2.new(0, 0, 0, 0), "🎯")
 
     ui.CreateInlineToggle(CardAim, "🎯 Camera Aimbot (Rechtsklick halten)", 55, settings.aimbotEnabled, function(s) settings.aimbotEnabled = s end)
@@ -70,39 +69,46 @@ return function(ui, settings)
         return closest
     end
 
-    -- Silent Aim
-    settings.addConnection("silentAim", RunService.RenderStepped:Connect(function()
-        if settings.silentAimEnabled then
+    -- Combined Target Tracking Loop
+    settings.addConnection("aimbotTracking", RunService.RenderStepped:Connect(function()
+        -- Always track closest player if either feature wants it
+        if settings.silentAimEnabled or settings.aimbotEnabled then
             currentTarget = getClosestPlayer()
+        else
+            currentTarget = nil
+        end
+
+        -- Camera Aimbot execution
+        if settings.aimbotEnabled and currentTarget and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+            local part = currentTarget.Character:FindFirstChild(settings.aimbotTargetPart) or currentTarget.Character:FindFirstChild("Head")
+            if part then
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, part.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / math.max(settings.aimbotSmoothing, 1))
+            end
         end
     end))
 
-    -- Triggerbot
-    settings.addConnection("triggerbot", RunService.RenderStepped:Connect(function()
-        if not settings.triggerbotEnabled or not currentTarget then return end
-        local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
-        if hum and hum.Health > 0 then
-            mouse1click()
-            task.wait(0.06)
+    -- Safe Triggerbot Loop (Runs on its own thread, respects task.wait properly)
+    task.spawn(function()
+        while true do
+            task.wait() -- Base tick rate prevent crashes
+            if settings.triggerbotEnabled and currentTarget then
+                local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
+                if hum and hum.Health > 0 then
+                    if mouse1click then
+                        mouse1click()
+                    elseif input and input.press_mouse_button then -- Executor fallback
+                        input.press_mouse_button(0)
+                        task.wait(0.02)
+                        input.release_mouse_button(0)
+                    end
+                    task.wait(0.08) -- Proper firing delay between shots
+                end
+            end
         end
-    end))
+    end)
 
-    -- Camera Aimbot (verbessert)
-    settings.addConnection("cameraAimbot", RunService.RenderStepped:Connect(function()
-        if not settings.aimbotEnabled then return end
-        if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end
-
-        local target = getClosestPlayer()
-        if not target or not target.Character then return end
-
-        local part = target.Character:FindFirstChild(settings.aimbotTargetPart) or target.Character:FindFirstChild("Head")
-        if not part then return end
-
-        local targetCFrame = CFrame.new(Camera.CFrame.Position, part.Position)
-        Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / math.max(settings.aimbotSmoothing, 1))
-    end))
-
-    -- FOV Circle
+    -- FOV Circle Drawing
     local fovCircle = Drawing.new("Circle")
     fovCircle.Thickness = 1.6
     fovCircle.NumSides = 80
@@ -121,6 +127,6 @@ return function(ui, settings)
         end
     end))
 
-    print("✅ Aimbot Tab erfolgreich geladen mit Silent Aim + Triggerbot")
+    print("✅ Aimbot Tab erfolgreich geladen mit stabilisiertem Triggerbot")
     return AimbotPage
 end
