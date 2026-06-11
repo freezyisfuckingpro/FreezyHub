@@ -16,13 +16,15 @@ local settings = {
     
     -- Aimbot & FOV Settings
     aimbotEnabled = false,
+    silentAimEnabled = false,     -- NEU: Fest registriert
+    triggerbotEnabled = false,    -- NEU: Fest registriert
     aimbotTeamCheck = true,
-    aimbotSmoothing = 1,          -- Höher = Langsamer/Legiter, 1 = Insta-Lock
+    aimbotSmoothing = 6,          -- Höher = Langsamer/Legiter, 1 = Insta-Lock
     aimbotTargetPart = "Head",    -- "Head" oder "HumanoidRootPart"
     
     fovEnabled = false,
-    fovRadius = 100,             -- Größe des Kreises
-    fovColor = Color3.fromRGB(255, 255, 255),
+    fovRadius = 140,             
+    fovColor = Color3.fromRGB(255, 80, 80),
     
     flySpeed = 50,
     farmDelay = 1.5,
