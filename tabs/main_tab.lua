@@ -220,7 +220,7 @@ return function(ui, settings)
     end
 
     -- Fly Card
-    local CardFly = ui.CreateCard(MainPage, "FLY MODE", UDim2.new(0, 280, 0, 180), UDim2.new(0, 0, 0, 0), "✈")
+    local CardFly = ui.CreateCard(MainPage, "FLY MODE", UDim2.new(0, 310, 0, 180), UDim2.new(0, 0, 0, 0), "✈")
     
     local FlyDesc = Instance.new("TextLabel", CardFly)
     FlyDesc.Text = "Ermöglicht dir zu fliegen. Steuerung: WASD + Space/Shift."; FlyDesc.Font = Enum.Font.Gotham; FlyDesc.TextSize = 11; FlyDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -275,7 +275,7 @@ return function(ui, settings)
     end)
 
     -- Noclip Card
-    local CardNoclip = ui.CreateCard(MainPage, "NOCLIP", UDim2.new(0, 280, 0, 180), UDim2.new(0, 330, 0, 0), "🛡")
+    local CardNoclip = ui.CreateCard(MainPage, "NOCLIP", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 0), "🛡")
     local NoclipDesc = Instance.new("TextLabel", CardNoclip)
     NoclipDesc.Text = "Deaktiviert Kollisionen. Du kannst durch Wände gehen."; NoclipDesc.Font = Enum.Font.Gotham; NoclipDesc.TextSize = 11; NoclipDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
     NoclipDesc.Position = UDim2.new(0, 16, 0, 45); NoclipDesc.Size = UDim2.new(1, -32, 0, 32); NoclipDesc.BackgroundTransparency = 1; NoclipDesc.TextWrapped = true; NoclipDesc.TextXAlignment = Enum.TextXAlignment.Left
@@ -287,22 +287,6 @@ return function(ui, settings)
         else
             stopNoclip()
         end
-    end)
-
-    -- Gamepass Unlocker Card
-    local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 280, 0, 150), UDim2.new(0, 330, 0, 200), "🪙")
-    local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Aktiviert den Unlocker für Robux-Gamepass-Features direkt aus dem Main-Tab."; UnlockerDesc.Font = Enum.Font.Gotham; UnlockerDesc.TextSize = 11; UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
-    UnlockerDesc.Position = UDim2.new(0, 16, 0, 45); UnlockerDesc.Size = UDim2.new(1, -32, 0, 32); UnlockerDesc.BackgroundTransparency = 1; UnlockerDesc.TextWrapped = true; UnlockerDesc.TextXAlignment = Enum.TextXAlignment.Left
-
-    local UnlockerStatus = Instance.new("TextLabel", CardUnlocker)
-    UnlockerStatus.Size = UDim2.new(0, 180, 0, 20); UnlockerStatus.Position = UDim2.new(0, 16, 0, 98); UnlockerStatus.Text = settings.gamepassUnlockerEnabled and "Unlocker aktiviert" or "Bereit für Unlock"; UnlockerStatus.Font = Enum.Font.GothamBold; UnlockerStatus.TextColor3 = settings.gamepassUnlockerEnabled and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(56, 189, 248); UnlockerStatus.BackgroundTransparency = 1; UnlockerStatus.TextXAlignment = Enum.TextXAlignment.Left
-
-    ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
-        settings.gamepassUnlockerEnabled = state
-        UnlockerStatus.Text = state and "Unlocker aktiviert" or "Bereit für Unlock"
-        UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(56, 189, 248)
-        LocalPlayer:SetAttribute("FreezyHub_GamepassUnlocker", state)
     end)
 
     -- Teleport CardD
@@ -352,7 +336,7 @@ return function(ui, settings)
     end)
 
     -- Auto Farm Card
-    local CardFarm = ui.CreateCard(MainPage, "AUTO-FARM fields", UDim2.new(0, 280, 0, 160), UDim2.new(0, 330, 0, 200), "🌿")
+    local CardFarm = ui.CreateCard(MainPage, "AUTO-FARM fields", UDim2.new(0, 310, 0, 160), UDim2.new(0, 330, 0, 200), "🌿")
     local StatusLbl = Instance.new("TextLabel", CardFarm)
     StatusLbl.Size = UDim2.new(0, 135, 0, 32); StatusLbl.Position = UDim2.new(0, 16, 0, 105); StatusLbl.Text = "Bereit..."; StatusLbl.Font = Enum.Font.GothamMedium; StatusLbl.TextColor3 = Color3.fromRGB(56, 189, 248); StatusLbl.BackgroundTransparency = 1; StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
 
