@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER - Final Version für +1 Speed
+    -- GAMEPASS UNLOCKER - Kauf-Erzwingung (0 Preis)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Unendlichkeitsspur + Boosts (letzter Versuch)"
+    UnlockerDesc.Text = "Unendlichkeitsspur → Preis 0 + Kauf-Erzwingung"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,7 +67,7 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 AKTIV - Versuche Kauf" or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 Preis 0 + Kauf-Versuch" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
@@ -90,31 +90,40 @@ return function(ui, settings)
             end)
         end)
 
-        -- Shop UI + Remotes
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(1)
+                task.wait(0.7)
 
-                -- UI Preise ändern
+                -- Preis auf 0 halten
                 for _, obj in ipairs(game:GetDescendants()) do
-                    if obj:IsA("TextLabel") and obj.Text and (obj.Text:find("2999") or obj.Text:find("2,999")) then
+                    if obj:IsA("TextLabel") and (obj.Text:find("2999") or obj.Text:find("2,999") or obj.Text:find("2.999")) then
                         obj.Text = "0"
                     end
                 end
 
-                -- Remotes feuern
+                -- Kauf-Button klicken simulieren + Remotes feuern
+                for _, btn in ipairs(game:GetDescendants()) do
+                    if btn:IsA("TextButton") and (btn.Text:find("Kaufen") or btn.Text:find("Buy")) then
+                        pcall(function()
+                            btn.Activated:Fire()   -- Button klicken
+                        end)
+                    end
+                end
+
+                -- Remotes
                 for _, remote in ipairs(game:GetDescendants()) do
-                    if remote:IsA("RemoteEvent") and remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") then
+                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") or remote.Name:lower():find("shop")) then
                         pcall(function()
                             remote:FireServer(0)
                             remote:FireServer("Infinity-Spur", 0)
+                            remote:FireServer(0, true)
                         end)
                     end
                 end
             end
         end)
 
-        print("FreezyHub Final Unlocker gestartet")
+        print("FreezyHub → Kauf-Erzwingung aktiv")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
@@ -122,7 +131,9 @@ return function(ui, settings)
         updateStatus(state)
     end)
 
-    if settings.gamepassUnlockerEnabled then task.defer(enableUnlocker, true) end
+    if settings.gamepassUnlockerEnabled then
+        task.defer(enableUnlocker, true)
+    end
 
     return MainPage
 end
