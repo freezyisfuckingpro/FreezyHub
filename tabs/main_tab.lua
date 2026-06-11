@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- UNLOCKER - Gezielt Remote Suche (wie Axon)
+    -- FINAL UNLOCKER - Gezielt + Weniger Spam
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Infinity-Spur Unlock (Remote Suche)"
+    UnlockerDesc.Text = "Infinity-Spur Unlock (letzter Versuch)"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,7 +67,7 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 SUCHT REMOTES..." or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 AKTIV - Klicke mehrmals auf die Spur" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
@@ -77,25 +77,24 @@ return function(ui, settings)
 
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(1)
+                task.wait(1.8) -- Noch langsamer, weniger Anti-Spam
 
                 -- Preis auf 0
                 for _, obj in ipairs(game:GetDescendants()) do
-                    if obj:IsA("TextLabel") and obj.Text and (obj.Text:find("2999") or obj.Text:find("2,999")) then
+                    if obj:IsA("TextLabel") and obj.Text and obj.Text:find("2999") then
                         obj.Text = "0"
                     end
                 end
 
-                -- Gezielt nach Kauf-Remotes suchen
+                -- Nur relevante Remotes
                 for _, remote in ipairs(game:GetDescendants()) do
                     if remote:IsA("RemoteEvent") then
-                        local name = remote.Name:lower()
-                        if name:find("buy") or name:find("purchase") or name:find("shop") or name:find("give") or name:find("unlock") or name:find("trail") or name:find("spur") then
+                        local n = remote.Name:lower()
+                        if n:find("buy") or n:find("purchase") or n:find("shop") or n:find("spur") or n:find("infinity") then
                             pcall(function()
-                                remote:FireServer(0) 
+                                remote:FireServer(0)
                                 remote:FireServer("Infinity-Spur", 0)
                                 remote:FireServer("Unendlichkeitsspur", 0)
-                                remote:FireServer({Item = "Infinity-Spur", Price = 0})
                             end)
                         end
                     end
@@ -103,7 +102,7 @@ return function(ui, settings)
             end
         end)
 
-        print("FreezyHub → Remote-Suche aktiv")
+        print("FreezyHub → Final Unlocker aktiv")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
