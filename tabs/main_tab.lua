@@ -29,90 +29,40 @@ return function(ui, settings)
     local PlayerCard = ui.CreateCard(PlayerPage, "PLAYER LIST", UDim2.new(0, 700, 0, 460), UDim2.new(0, 0, 0, 0), "👥")
     local PlayerDesc = Instance.new("TextLabel", PlayerCard)
     PlayerDesc.Text = "Teleportiere zu Spielern oder ziehe sie zu dir. Die Liste aktualisiert sich automatisch." 
-    PlayerDesc.Font = Enum.Font.Gotham
-    PlayerDesc.TextSize = 11
-    PlayerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
-    PlayerDesc.Position = UDim2.new(0, 16, 0, 42)
-    PlayerDesc.Size = UDim2.new(1, -32, 0, 30)
-    PlayerDesc.BackgroundTransparency = 1
-    PlayerDesc.TextWrapped = true
-    PlayerDesc.TextXAlignment = Enum.TextXAlignment.Left
+    PlayerDesc.Font = Enum.Font.Gotham; PlayerDesc.TextSize = 11; PlayerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
+    PlayerDesc.Position = UDim2.new(0, 16, 0, 42); PlayerDesc.Size = UDim2.new(1, -32, 0, 30); PlayerDesc.BackgroundTransparency = 1; PlayerDesc.TextWrapped = true; PlayerDesc.TextXAlignment = Enum.TextXAlignment.Left
 
     local RefreshBtn = Instance.new("TextButton", PlayerCard)
-    RefreshBtn.Size = UDim2.new(0, 110, 0, 30)
-    RefreshBtn.Position = UDim2.new(1, -126, 0, 12)
-    RefreshBtn.Text = "🔄 Refresh"
-    RefreshBtn.Font = Enum.Font.GothamBold
-    RefreshBtn.TextSize = 10
-    RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    RefreshBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 54)
+    RefreshBtn.Size = UDim2.new(0, 110, 0, 30); RefreshBtn.Position = UDim2.new(1, -126, 0, 12); RefreshBtn.Text = "🔄 Refresh"; RefreshBtn.Font = Enum.Font.GothamBold; RefreshBtn.TextSize = 10; RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255); RefreshBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 54)
     Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 8)
 
     local Scroll = Instance.new("ScrollingFrame", PlayerCard)
-    Scroll.Size = UDim2.new(1, -24, 1, -82)
-    Scroll.Position = UDim2.new(0, 12, 0, 78)
-    Scroll.BackgroundTransparency = 1
-    Scroll.BorderSizePixel = 0
-    Scroll.ScrollBarThickness = 4
-    Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-    Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Scroll.Size = UDim2.new(1, -24, 1, -82); Scroll.Position = UDim2.new(0, 12, 0, 78); Scroll.BackgroundTransparency = 1; Scroll.BorderSizePixel = 0; Scroll.ScrollBarThickness = 4; Scroll.CanvasSize = UDim2.new(0, 0, 0, 0); Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
     local ListLayout = Instance.new("UIListLayout", Scroll)
-    ListLayout.Padding = UDim.new(0, 6)
-    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ListLayout.Padding = UDim.new(0, 6); ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     local function createPlayerRow(player)
         local row = Instance.new("Frame")
-        row.Parent = Scroll
-        row.Size = UDim2.new(1, 0, 0, 54)
-        row.BackgroundColor3 = Color3.fromRGB(18, 27, 47)
-        row.BorderSizePixel = 0
+        row.Parent = Scroll; row.Size = UDim2.new(1, 0, 0, 54); row.BackgroundColor3 = Color3.fromRGB(18, 27, 47); row.BorderSizePixel = 0
         Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
 
         local avatar = Instance.new("ImageLabel", row)
-        avatar.Size = UDim2.new(0, 34, 0, 34)
-        avatar.Position = UDim2.new(0, 10, 0.5, -17)
-        avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+        avatar.Size = UDim2.new(0, 34, 0, 34); avatar.Position = UDim2.new(0, 10, 0.5, -17); avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
         Instance.new("UICorner", avatar).CornerRadius = UDim.new(1, 0)
 
         local nameLabel = Instance.new("TextLabel", row)
-        nameLabel.Size = UDim2.new(0, 220, 0, 16)
-        nameLabel.Position = UDim2.new(0, 54, 0, 10)
-        nameLabel.Text = player.Name
-        nameLabel.Font = Enum.Font.GothamBold
-        nameLabel.TextSize = 12
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        nameLabel.Size = UDim2.new(0, 220, 0, 16); nameLabel.Position = UDim2.new(0, 54, 0, 10); nameLabel.Text = player.Name; nameLabel.Font = Enum.Font.GothamBold; nameLabel.TextSize = 12; nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255); nameLabel.BackgroundTransparency = 1; nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 
         local roleLabel = Instance.new("TextLabel", row)
-        roleLabel.Size = UDim2.new(0, 180, 0, 14)
-        roleLabel.Position = UDim2.new(0, 54, 0, 28)
-        roleLabel.Text = player == LocalPlayer and "You" or (player.Team and player.Team.Name or "Neutral")
-        roleLabel.Font = Enum.Font.Gotham
-        roleLabel.TextSize = 10
-        roleLabel.TextColor3 = Color3.fromRGB(148, 163, 184)
-        roleLabel.BackgroundTransparency = 1
-        roleLabel.TextXAlignment = Enum.TextXAlignment.Left
+        roleLabel.Size = UDim2.new(0, 180, 0, 14); roleLabel.Position = UDim2.new(0, 54, 0, 28); roleLabel.Text = player == LocalPlayer and "You" or (player.Team and player.Team.Name or "Neutral"); roleLabel.Font = Enum.Font.Gotham; roleLabel.TextSize = 10; roleLabel.TextColor3 = Color3.fromRGB(148, 163, 184); roleLabel.BackgroundTransparency = 1; roleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
         local tpBtn = Instance.new("TextButton", row)
-        tpBtn.Size = UDim2.new(0, 80, 0, 28)
-        tpBtn.Position = UDim2.new(1, -176, 0.5, -14)
-        tpBtn.Text = "TP to"
-        tpBtn.Font = Enum.Font.GothamBold
-        tpBtn.TextSize = 10
-        tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tpBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+        tpBtn.Size = UDim2.new(0, 80, 0, 28); tpBtn.Position = UDim2.new(1, -176, 0.5, -14); tpBtn.Text = "TP to"; tpBtn.Font = Enum.Font.GothamBold; tpBtn.TextSize = 10; tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255); tpBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
         Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 8)
 
         local bringBtn = Instance.new("TextButton", row)
-        bringBtn.Size = UDim2.new(0, 80, 0, 28)
-        bringBtn.Position = UDim2.new(1, -88, 0.5, -14)
-        bringBtn.Text = "Bring"
-        bringBtn.Font = Enum.Font.GothamBold
-        bringBtn.TextSize = 10
-        bringBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        bringBtn.BackgroundColor3 = Color3.fromRGB(56, 189, 248)
+        bringBtn.Size = UDim2.new(0, 80, 0, 28); bringBtn.Position = UDim2.new(1, -88, 0.5, -14); bringBtn.Text = "Bring"; bringBtn.Font = Enum.Font.GothamBold; bringBtn.TextSize = 10; bringBtn.TextColor3 = Color3.fromRGB(255, 255, 255); bringBtn.BackgroundColor3 = Color3.fromRGB(56, 189, 248)
         Instance.new("UICorner", bringBtn).CornerRadius = UDim.new(0, 8)
 
         tpBtn.MouseButton1Click:Connect(function()
@@ -131,14 +81,10 @@ return function(ui, settings)
     end
 
     local function refreshPlayerList()
-        for _, child in ipairs(Scroll:GetChildren()) do
-            if child:IsA("Frame") then child:Destroy() end
-        end
+        for _, child in ipairs(Scroll:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
         local list = Players:GetPlayers()
         table.sort(list, function(a, b) return a.Name:lower() < b.Name:lower() end)
-        for _, player in ipairs(list) do
-            if player ~= LocalPlayer then createPlayerRow(player) end
-        end
+        for _, player in ipairs(list) do if player ~= LocalPlayer then createPlayerRow(player) end end
     end
 
     RefreshBtn.MouseButton1Click:Connect(refreshPlayerList)
@@ -197,10 +143,8 @@ return function(ui, settings)
     end
 
     -- ==========================================
-    -- MAIN PAGE CARDS (GRID LAYOUT FIX)
+    -- MAIN PAGE CARDS
     -- ==========================================
-    
-    -- Spalte 1, Reihe 1: Fly Card
     local CardFly = ui.CreateCard(MainPage, "FLY MODE", UDim2.new(0, 310, 0, 180), UDim2.new(0, 0, 0, 0), "✈")
     local FlyDesc = Instance.new("TextLabel", CardFly)
     FlyDesc.Text = "Ermöglicht dir zu fliegen. Steuerung: WASD + Space/Shift."; FlyDesc.Font = Enum.Font.Gotham; FlyDesc.TextSize = 11; FlyDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -250,7 +194,6 @@ return function(ui, settings)
         if state then startFly() else stopFly() end
     end)
 
-    -- Spalte 2, Reihe 1: Noclip Card
     local CardNoclip = ui.CreateCard(MainPage, "NOCLIP", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 0), "🛡")
     local NoclipDesc = Instance.new("TextLabel", CardNoclip)
     NoclipDesc.Text = "Deaktiviert Kollisionen. Du kannst durch Wände gehen."; NoclipDesc.Font = Enum.Font.Gotham; NoclipDesc.TextSize = 11; NoclipDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -261,7 +204,6 @@ return function(ui, settings)
         if state then startNoclip() else stopNoclip() end
     end)
 
-    -- Spalte 1, Reihe 2: Teleport Card (Verschoben auf Y: 200)
     local CardTp = ui.CreateCard(MainPage, "TELEPORT SYSTEM", UDim2.new(0, 310, 0, 160), UDim2.new(0, 0, 0, 200), "📍")
     local SaveAction = Instance.new("TextButton", CardTp)
     SaveAction.Size = UDim2.new(1, -32, 0, 38); SaveAction.Position = UDim2.new(0, 16, 0, 55); SaveAction.BackgroundColor3 = Color3.fromRGB(20, 30, 54); SaveAction.Text = "💾 Save Position"; SaveAction.Font = Enum.Font.GothamMedium; SaveAction.TextSize = 11; SaveAction.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -292,33 +234,59 @@ return function(ui, settings)
         end
     end)
 
-    -- Spalte 2, Reihe 2: Gamepass Unlocker Card (Verschoben auf Y: 200)
+    -- ==========================================
+    -- GAMEPASS UNLOCKER (ERWEITERTES AGGRESSIVES HOOKING)
+    -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 160), UDim2.new(0, 330, 0, 200), "🪙")
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Schaltet alle In-Game Gamepasses und Bezahl-Features serverseitig/lokal frei."; UnlockerDesc.Font = Enum.Font.Gotham; UnlockerDesc.TextSize = 11; UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
+    UnlockerDesc.Text = "Schaltet Gamepasses über tiefe Speicher-Hooks frei. Re-Injektiert bei Bedarf."; UnlockerDesc.Font = Enum.Font.Gotham; UnlockerDesc.TextSize = 11; UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
     UnlockerDesc.Position = UDim2.new(0, 16, 0, 45); UnlockerDesc.Size = UDim2.new(1, -32, 0, 32); UnlockerDesc.BackgroundTransparency = 1; UnlockerDesc.TextWrapped = true; UnlockerDesc.TextXAlignment = Enum.TextXAlignment.Left
 
     local UnlockerStatus = Instance.new("TextLabel", CardUnlocker)
     UnlockerStatus.Size = UDim2.new(0, 180, 0, 20); UnlockerStatus.Position = UDim2.new(0, 16, 0, 115); UnlockerStatus.Text = settings.gamepassUnlockerEnabled and "Unlocker aktiviert" or "Bereit für Unlock"; UnlockerStatus.Font = Enum.Font.GothamBold; UnlockerStatus.TextColor3 = settings.gamepassUnlockerEnabled and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(56, 189, 248); UnlockerStatus.BackgroundTransparency = 1; UnlockerStatus.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Funktionelle Gamepass Spoofing-Logik
     local function toggleGamepassBypass(state)
         settings.gamepassUnlockerEnabled = state
         LocalPlayer:SetAttribute("FreezyHub_GamepassUnlocker", state)
         
-        -- Aktiviert die gängigsten Core-Hooks für Abfragen im Spiel (UserOwnsGamePassAsync Bypass)
-        if state then
+        if state and hookmetamethod then
             local MarketplaceService = game:GetService("MarketplaceService")
-            local oldUserOwnsGamePassAsync
             
-            if hookmetamethod then
-                oldUserOwnsGamePassAsync = hookfunction(MarketplaceService.UserOwnsGamePassAsync, function(self, userId, gamepassId)
-                    if userId == LocalPlayer.UserId and settings.gamepassUnlockerEnabled then
-                        return true
+            -- Hook 1: UserOwnsGamePassAsync (Der Standard)
+            local oldUserOwns
+            oldUserOwns = hookfunction(MarketplaceService.UserOwnsGamePassAsync, function(self, userId, gamepassId)
+                if userId == LocalPlayer.UserId and settings.gamepassUnlockerEnabled then return true end
+                return oldUserOwns(self, userId, gamepassId)
+            end)
+
+            -- Hook 2: PlayerOwnsAsset (Häufiger Fallback für DevProducts/Pässe)
+            local oldOwnsAsset
+            oldOwnsAsset = hookfunction(MarketplaceService.PlayerOwnsAsset, function(self, player, assetId)
+                if player == LocalPlayer and settings.gamepassUnlockerEnabled then return true end
+                return oldOwnsAsset(self, player, assetId)
+            end)
+
+            -- Hook 3: Namecall (Sorgt dafür, dass aufgerufene Methoden via ":" ebenfalls manipuliert werden)
+            local oldNamecall
+            oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+                local method = getnamecallmethod()
+                if settings.gamepassUnlockerEnabled and (method == "UserOwnsGamePassAsync" or method == "PlayerOwnsAsset") then
+                    return true
+                end
+                return oldNamecall(self, ...)
+            end)
+
+            -- Hook 4: Lokale Script-Variablen erzwingen (Versucht, im Spiel geladene boolesche Attribute auf true zu setzen)
+            task.spawn(function()
+                while settings.gamepassUnlockerEnabled do
+                    for _, val in ipairs(LocalPlayer:GetDescendants()) do
+                        if val:IsA("BoolValue") and (val.Name:lower():find("pass") or val.Name:lower():find("vip") or val.Name:lower():find("owned")) then
+                            val.Value = true
+                        end
                     end
-                    return oldUserOwnsGamePassAsync(self, userId, gamepassId)
-                end)
-            end
+                    task.wait(2)
+                end
+            end)
         end
     end
 
@@ -328,7 +296,7 @@ return function(ui, settings)
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(56, 189, 248)
     end)
 
-    -- Spalte 1 & 2, Reihe 3: Auto Farm Card (Nach unten verschoben auf Y: 380)
+    -- Spalte 1 & 2, Reihe 3: Auto Farm Card
     local CardFarm = ui.CreateCard(MainPage, "AUTO-FARM FIELDS", UDim2.new(0, 640, 0, 140), UDim2.new(0, 0, 0, 380), "🌿")
     local FarmDesc = Instance.new("TextLabel", CardFarm)
     FarmDesc.Text = "Automatische Bewirtschaftung und Ernte der Felder."; FarmDesc.Font = Enum.Font.Gotham; FarmDesc.TextSize = 11; FarmDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -343,9 +311,7 @@ return function(ui, settings)
         StatusLbl.Text = state and "Aktiv am Farmen" or "Bereit..."
     end)
 
-    -- ==========================================
-    -- PERSISTENCE & INITIALIZATION
-    -- ==========================================
+    -- Initialisierung
     if settings.flyEnabled then startFly() end
     if settings.noclipEnabled then startNoclip() end
     if settings.gamepassUnlockerEnabled then toggleGamepassBypass(true) end
