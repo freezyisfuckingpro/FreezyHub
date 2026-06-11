@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER - Gezielt für Axon-Style Bypass
+    -- UNLOCKER - Gezielt Remote Suche (wie Axon)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Infinity-Spur Unlock (wie Axon Hub)"
+    UnlockerDesc.Text = "Infinity-Spur Unlock (Remote Suche)"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,7 +67,7 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 VERSUCHE AXON-STYLE UNLOCK" or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 SUCHT REMOTES..." or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
@@ -75,32 +75,27 @@ return function(ui, settings)
         settings.gamepassUnlockerEnabled = state
         if not state then return end
 
-        -- Standard Hooks
-        pcall(function()
-            hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
-        end)
-
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(1.5)  -- Nicht zu schnell
+                task.wait(1)
 
-                -- Preis auf 0 halten
+                -- Preis auf 0
                 for _, obj in ipairs(game:GetDescendants()) do
-                    if obj:IsA("TextLabel") and obj.Text and obj.Text:find("2999") then
+                    if obj:IsA("TextLabel") and obj.Text and (obj.Text:find("2999") or obj.Text:find("2,999")) then
                         obj.Text = "0"
                     end
                 end
 
-                -- Gezielt nach Kauf-Remotes suchen (wie andere Hubs)
+                -- Gezielt nach Kauf-Remotes suchen
                 for _, remote in ipairs(game:GetDescendants()) do
                     if remote:IsA("RemoteEvent") then
                         local name = remote.Name:lower()
-                        if name:find("buy") or name:find("purchase") or name:find("shop") or name:find("give") or name:find("unlock") or name:find("spur") then
+                        if name:find("buy") or name:find("purchase") or name:find("shop") or name:find("give") or name:find("unlock") or name:find("trail") or name:find("spur") then
                             pcall(function()
-                                remote:FireServer(0)                    -- 0 Robux
+                                remote:FireServer(0) 
                                 remote:FireServer("Infinity-Spur", 0)
                                 remote:FireServer("Unendlichkeitsspur", 0)
-                                remote:FireServer({Name = "Infinity-Spur", Price = 0})
+                                remote:FireServer({Item = "Infinity-Spur", Price = 0})
                             end)
                         end
                     end
@@ -108,7 +103,7 @@ return function(ui, settings)
             end
         end)
 
-        print("FreezyHub → Axon-Style Unlocker aktiv")
+        print("FreezyHub → Remote-Suche aktiv")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
