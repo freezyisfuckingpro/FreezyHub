@@ -6,19 +6,18 @@ return function(ui, settings)
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
-    -- Settings initialisieren
+    -- Settings
     settings.aimbotEnabled = settings.aimbotEnabled or false
     settings.silentAimEnabled = settings.silentAimEnabled or false
     settings.triggerbotEnabled = settings.triggerbotEnabled or false
     settings.aimbotTeamCheck = settings.aimbotTeamCheck or true
-    settings.aimbotSmoothing = settings.aimbotSmoothing or 8
+    settings.aimbotSmoothing = settings.aimbotSmoothing or 6
     settings.aimbotTargetPart = settings.aimbotTargetPart or "Head"
-    settings.fovEnabled = settings.fovEnabled or false
-    settings.fovRadius = settings.fovRadius or 120
+    settings.fovEnabled = settings.fovEnabled or true
+    settings.fovRadius = settings.fovRadius or 140
 
     local AimbotPage = ui.CreatePage("Aimbot")
 
-    -- ==================== MAIN CARD ====================
     local CardAim = ui.CreateCard(AimbotPage, "AIMBOT SYSTEM", UDim2.new(0, 380, 0, 380), UDim2.new(0, 0, 0, 0), "🎯")
 
     ui.CreateInlineToggle(CardAim, "🎯 Camera Aimbot (Rechtsklick halten)", 55, settings.aimbotEnabled, function(s) settings.aimbotEnabled = s end)
@@ -29,36 +28,18 @@ return function(ui, settings)
 
     -- Target Part Switch
     local partBtn = Instance.new("TextButton", CardAim)
-    partBtn.Size = UDim2.new(0, 160, 0, 30)
+    partBtn.Size = UDim2.new(0, 160, 0, 32)
     partBtn.Position = UDim2.new(0, 16, 0, 235)
     partBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
     partBtn.Text = settings.aimbotTargetPart == "Head" and "HEAD" or "TORSO"
     partBtn.Font = Enum.Font.GothamBold
-    partBtn.TextSize = 11
     partBtn.TextColor3 = Color3.fromRGB(56, 189, 248)
     Instance.new("UICorner", partBtn).CornerRadius = UDim.new(0, 6)
 
     partBtn.MouseButton1Click:Connect(function()
-        if settings.aimbotTargetPart == "Head" then
-            settings.aimbotTargetPart = "HumanoidRootPart"
-            partBtn.Text = "TORSO"
-        else
-            settings.aimbotTargetPart = "Head"
-            partBtn.Text = "HEAD"
-        end
+        settings.aimbotTargetPart = settings.aimbotTargetPart == "Head" and "HumanoidRootPart" or "Head"
+        partBtn.Text = settings.aimbotTargetPart == "Head" and "HEAD" or "TORSO"
     end)
-
-    -- FOV & Smoothing Slider (vereinfacht)
-    local fovTrack = Instance.new("Frame", CardAim)
-    fovTrack.Size = UDim2.new(0, 220, 0, 6)
-    fovTrack.Position = UDim2.new(0, 16, 0, 280)
-    fovTrack.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-    Instance.new("UICorner", fovTrack)
-
-    local fovFill = Instance.new("Frame", fovTrack)
-    fovFill.Size = UDim2.new(0.4, 0, 1, 0)
-    fovFill.BackgroundColor3 = Color3.fromRGB(56, 189, 248)
-    Instance.new("UICorner", fovFill)
 
     -- ==================== AIMBOT LOGIC ====================
     local currentTarget = nil
@@ -98,16 +79,15 @@ return function(ui, settings)
 
     -- Triggerbot
     settings.addConnection("triggerbot", RunService.RenderStepped:Connect(function()
-        if settings.triggerbotEnabled and currentTarget then
-            local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
-            if hum and hum.Health > 0 then
-                mouse1click()
-                task.wait(0.08) -- Anti-Spas
-            end
+        if not settings.triggerbotEnabled or not currentTarget then return end
+        local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
+        if hum and hum.Health > 0 then
+            mouse1click()
+            task.wait(0.06)
         end
     end))
 
-    -- Camera Aimbot
+    -- Camera Aimbot (verbessert)
     settings.addConnection("cameraAimbot", RunService.RenderStepped:Connect(function()
         if not settings.aimbotEnabled then return end
         if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end
@@ -124,7 +104,7 @@ return function(ui, settings)
 
     -- FOV Circle
     local fovCircle = Drawing.new("Circle")
-    fovCircle.Thickness = 1.8
+    fovCircle.Thickness = 1.6
     fovCircle.NumSides = 80
     fovCircle.Filled = false
     fovCircle.Transparency = 0.65
@@ -141,6 +121,6 @@ return function(ui, settings)
         end
     end))
 
-    print("✅ FreezyHub Aimbot Tab geladen (Silent Aim + Triggerbot)")
+    print("✅ Aimbot Tab erfolgreich geladen mit Silent Aim + Triggerbot")
     return AimbotPage
 end
