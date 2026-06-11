@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER - Letzter Versuch (Shop UI + Remotes)
+    -- GAMEPASS UNLOCKER - Final Version für +1 Speed
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Unendlichkeitsspur 2999 → Kostenlos (Shop Bypass)"
+    UnlockerDesc.Text = "Unendlichkeitsspur + Boosts (letzter Versuch)"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,7 +67,7 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 SHOP BYPASS AKTIV" or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 AKTIV - Versuche Kauf" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
@@ -75,37 +75,46 @@ return function(ui, settings)
         settings.gamepassUnlockerEnabled = state
         if not state then return end
 
-        -- Standard Hooks
-        pcall(hookfunction, MarketplaceService.UserOwnsGamePassAsync, function() return true end)
-        pcall(hookfunction, MarketplaceService.PlayerOwnsAsset, function() return true end)
+        -- Hooks
+        pcall(function()
+            hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
+            hookfunction(MarketplaceService.PlayerOwnsAsset, function() return true end)
+        end)
 
-        -- Shop UI direkt überschreiben
+        pcall(function()
+            local old = hookmetamethod(game, "__namecall", function(self, ...)
+                if getnamecallmethod():find("Owns") or getnamecallmethod():find("Purchase") then
+                    return true
+                end
+                return old(self, ...)
+            end)
+        end)
+
+        -- Shop UI + Remotes
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(0.8)
+                task.wait(1)
 
-                -- Preise auf 0 setzen
+                -- UI Preise ändern
                 for _, obj in ipairs(game:GetDescendants()) do
-                    if obj:IsA("TextLabel") and (obj.Text:find("2,999") or obj.Text:find("2999") or obj.Text:find("2.999")) then
+                    if obj:IsA("TextLabel") and obj.Text and (obj.Text:find("2999") or obj.Text:find("2,999")) then
                         obj.Text = "0"
-                    end
-                    if obj:IsA("TextButton") and obj.Text:find("Kaufen") then
-                        obj.Text = "Kostenlos Kaufen"
                     end
                 end
 
-                -- Remotes suchen und feuern
+                -- Remotes feuern
                 for _, remote in ipairs(game:GetDescendants()) do
-                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") or remote.Name:lower():find("spur") or remote.Name:lower():find("shop")) then
+                    if remote:IsA("RemoteEvent") and remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") then
                         pcall(function()
-                            remote:FireServer(0, "Infinity-Spur")  -- Versuche 0 Robux zu senden
+                            remote:FireServer(0)
+                            remote:FireServer("Infinity-Spur", 0)
                         end)
                     end
                 end
             end
         end)
 
-        print("FreezyHub → Shop UI + Remote Bypass aktiviert")
+        print("FreezyHub Final Unlocker gestartet")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
@@ -113,9 +122,7 @@ return function(ui, settings)
         updateStatus(state)
     end)
 
-    if settings.gamepassUnlockerEnabled then
-        task.defer(enableUnlocker, true)
-    end
+    if settings.gamepassUnlockerEnabled then task.defer(enableUnlocker, true) end
 
     return MainPage
 end
