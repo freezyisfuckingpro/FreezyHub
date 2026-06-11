@@ -3,6 +3,7 @@ local settings = {
     flyEnabled = false,
     noclipEnabled = false,
     farmEnabled = false,
+    gamepassUnlockerEnabled = false,
     
     -- ESP Settings
     espEnabled = false,

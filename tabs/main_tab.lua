@@ -289,6 +289,22 @@ return function(ui, settings)
         end
     end)
 
+    -- Gamepass Unlocker Card
+    local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 150), UDim2.new(0, 330, 0, 200), "🪙")
+    local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
+    UnlockerDesc.Text = "Aktiviert den Unlocker für Robux-Gamepass-Features direkt aus dem Main-Tab."; UnlockerDesc.Font = Enum.Font.Gotham; UnlockerDesc.TextSize = 11; UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
+    UnlockerDesc.Position = UDim2.new(0, 16, 0, 45); UnlockerDesc.Size = UDim2.new(1, -32, 0, 32); UnlockerDesc.BackgroundTransparency = 1; UnlockerDesc.TextWrapped = true; UnlockerDesc.TextXAlignment = Enum.TextXAlignment.Left
+
+    local UnlockerStatus = Instance.new("TextLabel", CardUnlocker)
+    UnlockerStatus.Size = UDim2.new(0, 180, 0, 20); UnlockerStatus.Position = UDim2.new(0, 16, 0, 98); UnlockerStatus.Text = settings.gamepassUnlockerEnabled and "Unlocker aktiviert" or "Bereit für Unlock"; UnlockerStatus.Font = Enum.Font.GothamBold; UnlockerStatus.TextColor3 = settings.gamepassUnlockerEnabled and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(56, 189, 248); UnlockerStatus.BackgroundTransparency = 1; UnlockerStatus.TextXAlignment = Enum.TextXAlignment.Left
+
+    ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
+        settings.gamepassUnlockerEnabled = state
+        UnlockerStatus.Text = state and "Unlocker aktiviert" or "Bereit für Unlock"
+        UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(56, 189, 248)
+        LocalPlayer:SetAttribute("FreezyHub_GamepassUnlocker", state)
+    end)
+
     -- Teleport CardD
     local CardTp = ui.CreateCard(MainPage, "TELEPORT SYSTEM", UDim2.new(0, 310, 0, 160), UDim2.new(0, 0, 0, 200), "📍")
     local SaveAction = Instance.new("TextButton", CardTp)
