@@ -6,7 +6,7 @@ return function(ui, settings)
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
-    -- Settings
+    -- Settings initialisieren
     settings.aimbotEnabled = settings.aimbotEnabled or false
     settings.silentAimEnabled = settings.silentAimEnabled or false
     settings.triggerbotEnabled = settings.triggerbotEnabled or false
@@ -16,8 +16,8 @@ return function(ui, settings)
     settings.fovEnabled = settings.fovEnabled or true
     settings.fovRadius = settings.fovRadius or 140
 
+    -- UI Seiten-Erstellung
     local AimbotPage = ui.CreatePage("Aimbot")
-
     local CardAim = ui.CreateCard(AimbotPage, "AIMBOT SYSTEM", UDim2.new(0, 380, 0, 380), UDim2.new(0, 0, 0, 0), "🎯")
 
     ui.CreateInlineToggle(CardAim, "🎯 Camera Aimbot (Rechtsklick halten)", 55, settings.aimbotEnabled, function(s) settings.aimbotEnabled = s end)
@@ -26,7 +26,7 @@ return function(ui, settings)
     ui.CreateInlineToggle(CardAim, "🛡 Team Check", 160, settings.aimbotTeamCheck, function(s) settings.aimbotTeamCheck = s end)
     ui.CreateInlineToggle(CardAim, "⭕ FOV Kreis anzeigen", 195, settings.fovEnabled, function(s) settings.fovEnabled = s end)
 
-    -- Target Part Switch
+    -- Target Part Switch Button
     local partBtn = Instance.new("TextButton", CardAim)
     partBtn.Size = UDim2.new(0, 160, 0, 32)
     partBtn.Position = UDim2.new(0, 16, 0, 235)
@@ -41,7 +41,7 @@ return function(ui, settings)
         partBtn.Text = settings.aimbotTargetPart == "Head" and "HEAD" or "TORSO"
     end)
 
-    -- ==================== AIMBOT LOGIC ====================
+    -- ==================== LOGIC ====================
     local currentTarget = nil
 
     local function getClosestPlayer()
@@ -70,57 +70,65 @@ return function(ui, settings)
         return closest
     end
 
-    -- Silent Aim
-    settings.addConnection("silentAim", RunService.RenderStepped:Connect(function()
-        if settings.silentAimEnabled then
+    -- Kombinierter, stabiler Tracking-Loop (Verhindert Lag-Spikes)
+    settings.addConnection("aimbotLoop", RunService.RenderStepped:Connect(function()
+        if settings.silentAimEnabled or settings.aimbotEnabled then
             currentTarget = getClosestPlayer()
-        end
-    end))
-
-    -- Triggerbot
-    settings.addConnection("triggerbot", RunService.RenderStepped:Connect(function()
-        if not settings.triggerbotEnabled or not currentTarget then return end
-        local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
-        if hum and hum.Health > 0 then
-            mouse1click()
-            task.wait(0.06)
-        end
-    end))
-
-    -- Camera Aimbot (verbessert)
-    settings.addConnection("cameraAimbot", RunService.RenderStepped:Connect(function()
-        if not settings.aimbotEnabled then return end
-        if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return end
-
-        local target = getClosestPlayer()
-        if not target or not target.Character then return end
-
-        local part = target.Character:FindFirstChild(settings.aimbotTargetPart) or target.Character:FindFirstChild("Head")
-        if not part then return end
-
-        local targetCFrame = CFrame.new(Camera.CFrame.Position, part.Position)
-        Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / math.max(settings.aimbotSmoothing, 1))
-    end))
-
-    -- FOV Circle
-    local fovCircle = Drawing.new("Circle")
-    fovCircle.Thickness = 1.6
-    fovCircle.NumSides = 80
-    fovCircle.Filled = false
-    fovCircle.Transparency = 0.65
-
-    settings.addConnection("fovCircle", RunService.RenderStepped:Connect(function()
-        if settings.fovEnabled then
-            local mouse = UserInputService:GetMouseLocation()
-            fovCircle.Position = Vector2.new(mouse.X, mouse.Y)
-            fovCircle.Radius = settings.fovRadius
-            fovCircle.Color = Color3.fromRGB(255, 80, 80)
-            fovCircle.Visible = true
         else
-            fovCircle.Visible = false
+            currentTarget = nil
+        end
+
+        if settings.aimbotEnabled and currentTarget and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+            local part = currentTarget.Character:FindFirstChild(settings.aimbotTargetPart) or currentTarget.Character:FindFirstChild("Head")
+            if part then
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, part.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1 / math.max(settings.aimbotSmoothing, 1))
+            end
         end
     end))
 
-    print("✅ Aimbot Tab erfolgreich geladen mit Silent Aim + Triggerbot")
+    -- Sicherer Triggerbot (Läuft in eigenem Thread, crasht die UI nicht mehr)
+    task.spawn(function()
+        while true do
+            task.wait() -- Entlastet die CPU
+            if settings.triggerbotEnabled and currentTarget then
+                local hum = currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid")
+                if hum and hum.Health > 0 then
+                    if mouse1click then
+                        mouse1click()
+                        task.wait(0.08) -- Schussverzögerung (Sicherer Wert)
+                    end
+                end
+            end
+        end
+    end)
+
+    -- FOV Kreis mit Studio-Sicherheitscheck (Verhindert "nil value"-Absturz)
+    local fovCircle = nil
+    local pcallSuccess = pcall(function()
+        if Drawing and Drawing.new then
+            fovCircle = Drawing.new("Circle")
+            fovCircle.Thickness = 1.6
+            fovCircle.NumSides = 80
+            fovCircle.Filled = false
+            fovCircle.Transparency = 0.65
+        end
+    end)
+
+    if pcallSuccess and fovCircle then
+        settings.addConnection("fovCircleUpdate", RunService.RenderStepped:Connect(function()
+            if settings.fovEnabled then
+                local mouse = UserInputService:GetMouseLocation()
+                fovCircle.Position = Vector2.new(mouse.X, mouse.Y)
+                fovCircle.Radius = settings.fovRadius
+                fovCircle.Color = Color3.fromRGB(255, 80, 80)
+                fovCircle.Visible = true
+            else
+                fovCircle.Visible = false
+            end
+        end))
+    end
+
+    print("✅ UI-Tab erfolgreich ohne Abstürze geladen!")
     return AimbotPage
 end
