@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER - Direkter Shop Bypass (für Infinity-Spur)
+    -- GAMEPASS UNLOCKER - Letzter Versuch (Shop UI + Remotes)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Versucht Infinity-Spur (2999) zu umgehen"
+    UnlockerDesc.Text = "Unendlichkeitsspur 2999 → Kostenlos (Shop Bypass)"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,7 +67,7 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 AKTIV - Kaufe jetzt" or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 SHOP BYPASS AKTIV" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
@@ -75,50 +75,37 @@ return function(ui, settings)
         settings.gamepassUnlockerEnabled = state
         if not state then return end
 
-        -- 1. Normale Hooks
-        pcall(function()
-            hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
-            hookfunction(MarketplaceService.PlayerOwnsAsset, function() return true end)
-        end)
+        -- Standard Hooks
+        pcall(hookfunction, MarketplaceService.UserOwnsGamePassAsync, function() return true end)
+        pcall(hookfunction, MarketplaceService.PlayerOwnsAsset, function() return true end)
 
-        -- 2. Namecall
-        pcall(function()
-            local oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-                local method = getnamecallmethod()
-                if method:find("Owns") or method:find("Purchase") or method:find("Prompt") then
-                    return true
-                end
-                return oldNamecall(self, ...)
-            end)
-        end)
-
-        -- 3. Shop UI direkt manipulieren + Remotes
+        -- Shop UI direkt überschreiben
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(1)
+                task.wait(0.8)
 
-                -- Shop UI Preise auf 0 setzen
-                for _, frame in ipairs(game:GetDescendants()) do
-                    if frame:IsA("TextLabel") and frame.Text:find("2,999") or frame.Text:find("2999") then
-                        frame.Text = "0"
+                -- Preise auf 0 setzen
+                for _, obj in ipairs(game:GetDescendants()) do
+                    if obj:IsA("TextLabel") and (obj.Text:find("2,999") or obj.Text:find("2999") or obj.Text:find("2.999")) then
+                        obj.Text = "0"
                     end
-                    if frame:IsA("TextButton") and frame.Text:find("Kaufen") then
-                        frame.Text = "Kostenlos Kaufen"
+                    if obj:IsA("TextButton") and obj.Text:find("Kaufen") then
+                        obj.Text = "Kostenlos Kaufen"
                     end
                 end
 
-                -- Versuche Remotes zu finden und zu feuern
+                -- Remotes suchen und feuern
                 for _, remote in ipairs(game:GetDescendants()) do
-                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") or remote.Name:lower():find("spur")) then
+                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") or remote.Name:lower():find("spur") or remote.Name:lower():find("shop")) then
                         pcall(function()
-                            remote:FireServer(0)  -- 0 Robux versuchen
+                            remote:FireServer(0, "Infinity-Spur")  -- Versuche 0 Robux zu senden
                         end)
                     end
                 end
             end
         end)
 
-        print("FreezyHub → Shop Bypass aktiv")
+        print("FreezyHub → Shop UI + Remote Bypass aktiviert")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
@@ -126,7 +113,9 @@ return function(ui, settings)
         updateStatus(state)
     end)
 
-    if settings.gamepassUnlockerEnabled then task.defer(enableUnlocker, true) end
+    if settings.gamepassUnlockerEnabled then
+        task.defer(enableUnlocker, true)
+    end
 
     return MainPage
 end
