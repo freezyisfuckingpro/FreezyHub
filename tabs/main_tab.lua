@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER - Optimiert & gezielt für +1 Speed
+    -- GAMEPASS UNLOCKER - Direkter Shop Bypass (für Infinity-Spur)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Unendlichkeitsspur (2.999) + alle Boosts"
+    UnlockerDesc.Text = "Versucht Infinity-Spur (2999) zu umgehen"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,69 +67,58 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 AKTIV (weniger Lag)" or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 AKTIV - Kaufe jetzt" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
-    local unlockLoop = nil
-
     local function enableUnlocker(state)
         settings.gamepassUnlockerEnabled = state
-
-        if unlockLoop then 
-            unlockLoop:Disconnect() 
-            unlockLoop = nil 
-        end
-
         if not state then return end
 
-        -- Standard Hooks
+        -- 1. Normale Hooks
         pcall(function()
             hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
             hookfunction(MarketplaceService.PlayerOwnsAsset, function() return true end)
         end)
 
+        -- 2. Namecall
         pcall(function()
-            local old = hookmetamethod(game, "__namecall", function(self, ...)
+            local oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
                 local method = getnamecallmethod()
                 if method:find("Owns") or method:find("Purchase") or method:find("Prompt") then
                     return true
                 end
-                return old(self, ...)
+                return oldNamecall(self, ...)
             end)
         end)
 
-        -- Sehr optimierter Loop (nur alle 2 Sekunden + gezielte Suche)
-        unlockLoop = RunService.Heartbeat:Connect(function()
-            if not settings.gamepassUnlockerEnabled then return end
+        -- 3. Shop UI direkt manipulieren + Remotes
+        task.spawn(function()
+            while settings.gamepassUnlockerEnabled do
+                task.wait(1)
 
-            -- Leaderstats
-            local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
-            if leaderstats then
-                for _, v in ipairs(leaderstats:GetChildren()) do
-                    if v:IsA("NumberValue") or v:IsA("IntValue") then
-                        v.Value = 999999999999
+                -- Shop UI Preise auf 0 setzen
+                for _, frame in ipairs(game:GetDescendants()) do
+                    if frame:IsA("TextLabel") and frame.Text:find("2,999") or frame.Text:find("2999") then
+                        frame.Text = "0"
+                    end
+                    if frame:IsA("TextButton") and frame.Text:find("Kaufen") then
+                        frame.Text = "Kostenlos Kaufen"
+                    end
+                end
+
+                -- Versuche Remotes zu finden und zu feuern
+                for _, remote in ipairs(game:GetDescendants()) do
+                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("buy") or remote.Name:lower():find("purchase") or remote.Name:lower():find("spur")) then
+                        pcall(function()
+                            remote:FireServer(0)  -- 0 Robux versuchen
+                        end)
                     end
                 end
             end
-
-            -- Gezielt nach Spur / Speed Werten suchen (weniger Lag)
-            for _, v in ipairs(LocalPlayer:GetChildren()) do
-                local name = v.Name:lower()
-                if name:find("spur") or name:find("speed") or name:find("boost") or name:find("multi") then
-                    if v:IsA("BoolValue") then v.Value = true end
-                    if v:IsA("NumberValue") or v:IsA("IntValue") then 
-                        v.Value = 999999999999 
-                    end
-                end
-            end
-
-            LocalPlayer:SetAttribute("Unendlichkeitsspur", true)
-            LocalPlayer:SetAttribute("SpurOwned", true)
-            LocalPlayer:SetAttribute("SpeedMultiplier", 999999999)
         end)
 
-        print("FreezyHub → Optimized Unlocker gestartet")
+        print("FreezyHub → Shop Bypass aktiv")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
@@ -137,9 +126,7 @@ return function(ui, settings)
         updateStatus(state)
     end)
 
-    if settings.gamepassUnlockerEnabled then
-        task.defer(enableUnlocker, true)
-    end
+    if settings.gamepassUnlockerEnabled then task.defer(enableUnlocker, true) end
 
     return MainPage
 end
