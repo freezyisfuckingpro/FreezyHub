@@ -14,16 +14,17 @@ local settings = {
     espSkeletons = false,
     espTracers = false,
     
-    -- Aimbot & FOV Settings
+    -- Aimbot & FOV Settings (Perfekt abgestimmt auf Rivals)
     aimbotEnabled = false,
-    silentAimEnabled = false,     -- NEU: Fest registriert
-    triggerbotEnabled = false,    -- NEU: Fest registriert
+    silentAimEnabled = false,     
+    magicBulletEnabled = false,   -- NEU: Schalter für Wand-Bypass
+    triggerbotEnabled = false,    
     aimbotTeamCheck = true,
-    aimbotSmoothing = 6,          -- Höher = Langsamer/Legiter, 1 = Insta-Lock
-    aimbotTargetPart = "Head",    -- "Head" oder "HumanoidRootPart"
+    aimbotSmoothing = 4,          -- Optimaler Standardwert für Rivals
+    aimbotTargetPart = "Head",    -- "Head" oder "HumanoidRootPart" (Torso)
     
     fovEnabled = false,
-    fovRadius = 140,             
+    fovRadius = 140,              -- Lässt sich jetzt über deinen Slider live anpassen
     fovColor = Color3.fromRGB(255, 80, 80),
     
     flySpeed = 50,
