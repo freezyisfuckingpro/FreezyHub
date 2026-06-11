@@ -3,9 +3,9 @@ return function(ui, settings)
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
     local Players = game:GetService("Players")
+    local MarketplaceService = game:GetService("MarketplaceService")
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
-    local MarketplaceService = game:GetService("MarketplaceService")
 
     -- Nav Tabs
     ui.CreateNavTab("Main Hacks", "🏠", "Main")
@@ -16,12 +16,11 @@ return function(ui, settings)
     ui.CreateNavTab("Misc", "⚙", "Misc")
     ui.CreateNavTab("Aimbot & FOV", "🎯", "Aimbot")
 
-    -- Seiten erstellen
+    -- Seiten
     ui.CreatePage("Movement")
     ui.CreatePage("World")
     ui.CreatePage("Misc")
     ui.CreatePage("Aimbot")
-
     local PlayerPage = ui.CreatePage("Player")
     local MainPage = ui.CreatePage("Main")
 
@@ -64,11 +63,11 @@ return function(ui, settings)
     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     local function createPlayerRow(player)
-        local row = Instance.new("Frame")
+        if player == LocalPlayer then return end
+        local row = Instance.new("Frame", Scroll)
         row.Size = UDim2.new(1, 0, 0, 54)
         row.BackgroundColor3 = Color3.fromRGB(18, 27, 47)
         row.BorderSizePixel = 0
-        row.Parent = Scroll
         Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
 
         local avatar = Instance.new("ImageLabel", row)
@@ -90,7 +89,7 @@ return function(ui, settings)
         local roleLabel = Instance.new("TextLabel", row)
         roleLabel.Size = UDim2.new(0, 180, 0, 14)
         roleLabel.Position = UDim2.new(0, 54, 0, 28)
-        roleLabel.Text = player == LocalPlayer and "You" or (player.Team and player.Team.Name or "Neutral")
+        roleLabel.Text = player.Team and player.Team.Name or "Neutral"
         roleLabel.Font = Enum.Font.Gotham
         roleLabel.TextSize = 10
         roleLabel.TextColor3 = Color3.fromRGB(148, 163, 184)
@@ -120,17 +119,13 @@ return function(ui, settings)
         tpBtn.MouseButton1Click:Connect(function()
             local me = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             local target = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            if me and target then 
-                me.CFrame = target.CFrame + Vector3.new(0, 4, 0) 
-            end
+            if me and target then me.CFrame = target.CFrame + Vector3.new(0, 4, 0) end
         end)
 
         bringBtn.MouseButton1Click:Connect(function()
             local me = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             local target = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            if me and target then 
-                target.CFrame = me.CFrame + Vector3.new(0, 4, 0) 
-            end
+            if me and target then target.CFrame = me.CFrame + Vector3.new(0, 4, 0) end
         end)
     end
 
@@ -141,7 +136,7 @@ return function(ui, settings)
         local list = Players:GetPlayers()
         table.sort(list, function(a, b) return a.Name:lower() < b.Name:lower() end)
         for _, player in ipairs(list) do
-            if player ~= LocalPlayer then createPlayerRow(player) end
+            createPlayerRow(player)
         end
     end
 
@@ -161,7 +156,6 @@ return function(ui, settings)
             local humanoid = character and character:FindFirstChildOfClass("Humanoid")
             local root = character and character:FindFirstChild("HumanoidRootPart")
             if not humanoid or not root then return end
-
             humanoid.PlatformStand = true
             local moveDirection = Vector3.new(0, 0, 0)
             if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDirection += Camera.CFrame.LookVector end
@@ -170,8 +164,7 @@ return function(ui, settings)
             if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDirection += Camera.CFrame.RightVector end
             if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDirection += Vector3.new(0, 1, 0) end
             if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDirection -= Vector3.new(0, 1, 0) end
-
-            root.AssemblyLinearVelocity = moveDirection * settings.flySpeed
+            root.AssemblyLinearVelocity = moveDirection * (settings.flySpeed or 50)
         end)
     end
 
@@ -188,9 +181,7 @@ return function(ui, settings)
             local character = LocalPlayer.Character
             if not character then return end
             for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") and part.CanCollide then 
-                    part.CanCollide = false 
-                end
+                if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end
             end
         end)
     end
@@ -200,14 +191,18 @@ return function(ui, settings)
     end
 
     -- ==========================================
-    -- MAIN PAGE - CARDS
+    -- MAIN PAGE CARDS
     -- ==========================================
     local CardFly = ui.CreateCard(MainPage, "FLY MODE", UDim2.new(0, 310, 0, 180), UDim2.new(0, 0, 0, 0), "✈")
-    -- Fly UI (vereinfacht)
     local FlyDesc = Instance.new("TextLabel", CardFly)
     FlyDesc.Text = "Ermöglicht dir zu fliegen. Steuerung: WASD + Space/Shift."
-    FlyDesc.Font = Enum.Font.Gotham; FlyDesc.TextSize = 11; FlyDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
-    FlyDesc.Position = UDim2.new(0, 16, 0, 45); FlyDesc.Size = UDim2.new(1, -32, 0, 32); FlyDesc.BackgroundTransparency = 1; FlyDesc.TextWrapped = true
+    FlyDesc.Font = Enum.Font.Gotham
+    FlyDesc.TextSize = 11
+    FlyDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
+    FlyDesc.Position = UDim2.new(0, 16, 0, 45)
+    FlyDesc.Size = UDim2.new(1, -32, 0, 32)
+    FlyDesc.BackgroundTransparency = 1
+    FlyDesc.TextWrapped = true
 
     ui.CreateToggle(CardFly, settings.flyEnabled or false, function(state)
         settings.flyEnabled = state
@@ -220,17 +215,48 @@ return function(ui, settings)
         if state then startNoclip() else stopNoclip() end
     end)
 
-    -- Teleport Card (vereinfacht)
+    -- TELEPORT SYSTEM
     local CardTp = ui.CreateCard(MainPage, "TELEPORT SYSTEM", UDim2.new(0, 310, 0, 160), UDim2.new(0, 0, 0, 200), "📍")
-    -- ... (deine alten Save/Tp Buttons hier einfügen)
+    local SaveAction = Instance.new("TextButton", CardTp)
+    SaveAction.Size = UDim2.new(1, -32, 0, 38)
+    SaveAction.Position = UDim2.new(0, 16, 0, 55)
+    SaveAction.Text = "💾 Save Position"
+    SaveAction.BackgroundColor3 = Color3.fromRGB(20, 30, 54)
+    Instance.new("UICorner", SaveAction).CornerRadius = UDim.new(0, 8)
+
+    local TpAction = Instance.new("TextButton", CardTp)
+    TpAction.Size = UDim2.new(1, -32, 0, 38)
+    TpAction.Position = UDim2.new(0, 16, 0, 105)
+    TpAction.Text = "🚀 Teleport to Waypoint"
+    TpAction.BackgroundColor3 = Color3.fromRGB(20, 30, 54)
+    Instance.new("UICorner", TpAction).CornerRadius = UDim.new(0, 8)
+
+    SaveAction.MouseButton1Click:Connect(function()
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            settings.savedCFrame = root.CFrame
+            SaveAction.Text = "✓ Position Saved!"
+            task.wait(1)
+            SaveAction.Text = "💾 Save Position"
+        end
+    end)
+
+    TpAction.MouseButton1Click:Connect(function()
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root and settings.savedCFrame then
+            root.CFrame = settings.savedCFrame
+            TpAction.Text = "✓ Teleport Success!"
+            task.wait(1)
+            TpAction.Text = "🚀 Teleport to Waypoint"
+        end
+    end)
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER v2.4 (Advanced)
+    -- GAMEPASS UNLOCKER (sehr aggressiv)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
-
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Aggressiver Unlocker für GamePasses & In-App Käufe. Funktioniert in den meisten Spielen."
+    UnlockerDesc.Text = "Aggressiver Unlocker für GamePasses & In-App Käufe."
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -238,7 +264,6 @@ return function(ui, settings)
     UnlockerDesc.Size = UDim2.new(1, -32, 0, 40)
     UnlockerDesc.BackgroundTransparency = 1
     UnlockerDesc.TextWrapped = true
-    UnlockerDesc.TextXAlignment = Enum.TextXAlignment.Left
 
     local UnlockerStatus = Instance.new("TextLabel", CardUnlocker)
     UnlockerStatus.Size = UDim2.new(0, 260, 0, 20)
@@ -246,70 +271,39 @@ return function(ui, settings)
     UnlockerStatus.Font = Enum.Font.GothamBold
     UnlockerStatus.TextSize = 11
     UnlockerStatus.BackgroundTransparency = 1
-    UnlockerStatus.TextXAlignment = Enum.TextXAlignment.Left
 
     local function updateUnlockerStatus(state)
-        UnlockerStatus.Text = state and "🟢 Unlocker AKTIV - Alle Käufe freigeschaltet" or "⚪ Bereit zum Aktivieren"
+        UnlockerStatus.Text = state and "🟢 AKTIV" or "⚪ Bereit"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
     local function createAdvancedGamepassUnlocker(state)
         settings.gamepassUnlockerEnabled = state
-        LocalPlayer:SetAttribute("FreezyHub_GamepassUnlocker", state)
-
         if not state then return end
 
-        -- Hook 1
-        local oldUserOwns = hookfunction(MarketplaceService.UserOwnsGamePassAsync, function(self, userId, gamepassId)
-            if settings.gamepassUnlockerEnabled and userId == LocalPlayer.UserId then return true end
-            return oldUserOwns(self, userId, gamepassId)
+        pcall(function()
+            hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
+            hookfunction(MarketplaceService.PlayerOwnsAsset, function() return true end)
         end)
 
-        -- Hook 2
-        local oldPlayerOwns = hookfunction(MarketplaceService.PlayerOwnsAsset, function(self, player, assetId)
-            if settings.gamepassUnlockerEnabled and player == LocalPlayer then return true end
-            return oldPlayerOwns(self, player, assetId)
-        end)
-
-        -- Hook 3: Namecall
-        local oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-            local method = getnamecallmethod()
-            local args = {...}
-
-            if settings.gamepassUnlockerEnabled then
-                if method == "UserOwnsGamePassAsync" or method == "PlayerOwnsAsset" then
+        pcall(function()
+            local old = hookmetamethod(game, "__namecall", function(self, ...)
+                if getnamecallmethod():find("Owns") or getnamecallmethod():find("Purchase") then
                     return true
                 end
-                if method == "PromptGamePassPurchase" or method == "PromptPurchase" then
-                    task.spawn(function()
-                        MarketplaceService:ProcessReceipt({
-                            PlayerId = LocalPlayer.UserId,
-                            ProductId = args[1] or 0,
-                            PurchaseId = "freezy-"..tick(),
-                            CurrencyType = Enum.CurrencyType.Robux
-                        })
-                    end)
-                    return
-                end
-            end
-            return oldNamecall(self, ...)
+                return old(self, ...)
+            end)
         end)
 
-        -- Aggressive Local Override
         task.spawn(function()
-            while settings.gamepassUnlockerEnabled and task.wait(1.5) do
+            while settings.gamepassUnlockerEnabled do
+                task.wait(1)
                 for _, v in ipairs(LocalPlayer:GetDescendants()) do
-                    if v:IsA("BoolValue") and (v.Name:lower():find("own") or v.Name:lower():find("pass") or v.Name:lower():find("vip") or v.Name:lower():find("premium")) then
-                        v.Value = true
-                    end
+                    if v:IsA("BoolValue") then v.Value = true end
+                    if v:IsA("NumberValue") or v:IsA("IntValue") then v.Value = 999999 end
                 end
-                LocalPlayer:SetAttribute("HasGamepass", true)
-                LocalPlayer:SetAttribute("VIP", true)
-                LocalPlayer:SetAttribute("Premium", true)
             end
         end)
-
-        print("FreezyHub → Advanced GamePass Unlocker aktiviert")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
@@ -317,20 +311,7 @@ return function(ui, settings)
         updateUnlockerStatus(state)
     end)
 
-    -- Initial Load
-    if settings.gamepassUnlockerEnabled then
-        task.defer(function()
-            createAdvancedGamepassUnlocker(true)
-            updateUnlockerStatus(true)
-        end)
-    end
-
-    -- Character Respawn Handling
-    LocalPlayer.CharacterAdded:Connect(function()
-        task.wait(1)
-        if settings.flyEnabled then startFly() end
-        if settings.noclipEnabled then startNoclip() end
-    end)
+    if settings.gamepassUnlockerEnabled then createAdvancedGamepassUnlocker(true) end
 
     return MainPage
 end
