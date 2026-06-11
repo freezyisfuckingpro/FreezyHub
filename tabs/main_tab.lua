@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- GAMEPASS UNLOCKER - Optimiert für +1 Speed (weniger Lag)
+    -- GAMEPASS UNLOCKER - Optimiert & gezielt für +1 Speed
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Unendlichkeitsspur (2.999 Robux) + Boosts"
+    UnlockerDesc.Text = "Unendlichkeitsspur (2.999) + alle Boosts"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -67,20 +67,23 @@ return function(ui, settings)
     UnlockerStatus.BackgroundTransparency = 1
 
     local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 AKTIV - Warte 10-20 Sek" or "⚪ Deaktiviert"
+        UnlockerStatus.Text = state and "🟢 AKTIV (weniger Lag)" or "⚪ Deaktiviert"
         UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
     end
 
-    local unlockerConnection = nil
+    local unlockLoop = nil
 
     local function enableUnlocker(state)
         settings.gamepassUnlockerEnabled = state
-        if not state then 
-            if unlockerConnection then unlockerConnection:Disconnect() end
-            return 
+
+        if unlockLoop then 
+            unlockLoop:Disconnect() 
+            unlockLoop = nil 
         end
 
-        -- Marketplace Hooks
+        if not state then return end
+
+        -- Standard Hooks
         pcall(function()
             hookfunction(MarketplaceService.UserOwnsGamePassAsync, function() return true end)
             hookfunction(MarketplaceService.PlayerOwnsAsset, function() return true end)
@@ -88,31 +91,32 @@ return function(ui, settings)
 
         pcall(function()
             local old = hookmetamethod(game, "__namecall", function(self, ...)
-                if getnamecallmethod():find("Owns") or getnamecallmethod():find("Purchase") then
+                local method = getnamecallmethod()
+                if method:find("Owns") or method:find("Purchase") or method:find("Prompt") then
                     return true
                 end
                 return old(self, ...)
             end)
         end)
 
-        -- Optimierter Loop (weniger Lag)
-        unlockerConnection = RunService.Heartbeat:Connect(function()
+        -- Sehr optimierter Loop (nur alle 2 Sekunden + gezielte Suche)
+        unlockLoop = RunService.Heartbeat:Connect(function()
             if not settings.gamepassUnlockerEnabled then return end
 
             -- Leaderstats
-            local ls = LocalPlayer:FindFirstChild("leaderstats")
-            if ls then
-                for _, v in ipairs(ls:GetDescendants()) do
+            local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+            if leaderstats then
+                for _, v in ipairs(leaderstats:GetChildren()) do
                     if v:IsA("NumberValue") or v:IsA("IntValue") then
                         v.Value = 999999999999
                     end
                 end
             end
 
-            -- Wichtige Werte gezielter suchen
-            for _, v in ipairs(LocalPlayer:GetDescendants()) do
+            -- Gezielt nach Spur / Speed Werten suchen (weniger Lag)
+            for _, v in ipairs(LocalPlayer:GetChildren()) do
                 local name = v.Name:lower()
-                if name:find("spur") or name:find("unendlich") or name:find("speed") or name:find("boost") then
+                if name:find("spur") or name:find("speed") or name:find("boost") or name:find("multi") then
                     if v:IsA("BoolValue") then v.Value = true end
                     if v:IsA("NumberValue") or v:IsA("IntValue") then 
                         v.Value = 999999999999 
@@ -122,9 +126,10 @@ return function(ui, settings)
 
             LocalPlayer:SetAttribute("Unendlichkeitsspur", true)
             LocalPlayer:SetAttribute("SpurOwned", true)
+            LocalPlayer:SetAttribute("SpeedMultiplier", 999999999)
         end)
 
-        print("FreezyHub → Unendlichkeitsspur Unlocker gestartet")
+        print("FreezyHub → Optimized Unlocker gestartet")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
