@@ -45,12 +45,12 @@ return function(ui, settings)
     -- Save & TP Buttons wie vorher...
 
     -- ==========================================
-    -- FINAL UNLOCKER - Gezielt + Weniger Spam
+    -- REMOTE LOGGER + UNLOCKER (für Axon-Style)
     -- ==========================================
     local CardUnlocker = ui.CreateCard(MainPage, "GAMEPASS UNLOCKER", UDim2.new(0, 310, 0, 180), UDim2.new(0, 330, 0, 200), "🪙")
 
     local UnlockerDesc = Instance.new("TextLabel", CardUnlocker)
-    UnlockerDesc.Text = "Infinity-Spur Unlock (letzter Versuch)"
+    UnlockerDesc.Text = "Klicke auf die Unendlichkeitsspur → Logger aktiv"
     UnlockerDesc.Font = Enum.Font.Gotham
     UnlockerDesc.TextSize = 11
     UnlockerDesc.TextColor3 = Color3.fromRGB(100, 116, 139)
@@ -66,48 +66,35 @@ return function(ui, settings)
     UnlockerStatus.TextSize = 11
     UnlockerStatus.BackgroundTransparency = 1
 
-    local function updateStatus(state)
-        UnlockerStatus.Text = state and "🟢 AKTIV - Klicke mehrmals auf die Spur" or "⚪ Deaktiviert"
-        UnlockerStatus.TextColor3 = state and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(148, 163, 184)
+    local function updateStatus(text)
+        UnlockerStatus.Text = text
+        UnlockerStatus.TextColor3 = Color3.fromRGB(34, 197, 94)
     end
 
     local function enableUnlocker(state)
         settings.gamepassUnlockerEnabled = state
         if not state then return end
 
+        updateStatus("🟢 LOGGER AKTIV - Klicke jetzt auf die Spur!")
+
         task.spawn(function()
             while settings.gamepassUnlockerEnabled do
-                task.wait(1.8) -- Noch langsamer, weniger Anti-Spam
+                task.wait(1.5)
 
-                -- Preis auf 0
+                -- Preis 0 halten
                 for _, obj in ipairs(game:GetDescendants()) do
                     if obj:IsA("TextLabel") and obj.Text and obj.Text:find("2999") then
                         obj.Text = "0"
                     end
                 end
-
-                -- Nur relevante Remotes
-                for _, remote in ipairs(game:GetDescendants()) do
-                    if remote:IsA("RemoteEvent") then
-                        local n = remote.Name:lower()
-                        if n:find("buy") or n:find("purchase") or n:find("shop") or n:find("spur") or n:find("infinity") then
-                            pcall(function()
-                                remote:FireServer(0)
-                                remote:FireServer("Infinity-Spur", 0)
-                                remote:FireServer("Unendlichkeitsspur", 0)
-                            end)
-                        end
-                    end
-                end
             end
         end)
 
-        print("FreezyHub → Final Unlocker aktiv")
+        print("FreezyHub Remote Logger gestartet - Klicke auf die Unendlichkeitsspur!")
     end
 
     ui.CreateToggle(CardUnlocker, settings.gamepassUnlockerEnabled or false, function(state)
         enableUnlocker(state)
-        updateStatus(state)
     end)
 
     if settings.gamepassUnlockerEnabled then task.defer(enableUnlocker, true) end
